@@ -15,10 +15,19 @@ spack load environment-modules
 source /etc/profile.d/modules.sh
 ```
 
-## Installation
+## Existing Installation
 
+If there is a version of SCSPKG currently installed, add it to your environment
 ```{bash}
-bash install.sh
+bash setup_env.sh [INSTALL_DIR]
+source ~/.bashrc
+```
+
+## New Installation
+
+If there is no version currently installed:
+```{bash}
+bash install.sh [INSTALL_DIR]
 source ~/.bashrc
 ```
 
