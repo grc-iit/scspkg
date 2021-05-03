@@ -38,10 +38,10 @@ Packages will be placed under ${SCSPKG_ROOT}/packages and their modulefiles will
 be placed under ${SCSPKG_ROOT}/modulefiles.
 
 ```{bash}
-scspkg create [package]
+scspkg create [package] #Create an empty package
 scspkg remove [package] #Deletes the package permanently (including source)
 scspkg add_dep [package] dep ... #Add a dependency to a module
 scspkg rm_dep [package] dep ... #Remove a dependency from a module (but will not unload it)
-scspkg path [package] #Return the location of the package folder
-scspkg module-schema [package] #Return the location of the package modulefile schema (for custom edits)
+scspkg path [package] #Return the location of the package folder (used for setting prefixes when building; e.g., CMAKE_INSTALL_PREFIX)
+scspkg schema-path [package] #Return the location of the package modulefile schema (for custom edits)
 ```
