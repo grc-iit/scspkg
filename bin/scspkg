@@ -79,9 +79,12 @@ class Package:
             fp.write(bytes(module, "utf-8"))
 
     def remove(self):
-        shutil.rmtree(self.pkg_root)
-        os.remove(self.module_path)
-        os.remove(self.module_schema_path)
+        if os.path.exists(self.pkg_root):
+            shutil.rmtree(self.pkg_root)
+        if os.path.exists(self.module_path):
+            os.remove(self.module_path)
+        if os.path.exists(self.module_schema_path):
+            os.remove(self.module_schema_path)
 
     def add_deps(self, deps):
         for dep in deps:
@@ -121,10 +124,11 @@ class SCSPKG:
 
     def create_packages(self, packages):
         for package_name in packages:
-            try:
-                os.mkdir(os.path.join(self.root, "packages", package_name))
+            package_path = os.path.join(self.root, "packages", package_name)
+            if not os.path.exists(package_path):
+                os.mkdir(package_path)
                 Package(package_name).save_config()
-            except FileExistsError:
+            else:
                 print("Error: the package {} already exists".format(package_name))
 
     def rm_packages(self, packages):
