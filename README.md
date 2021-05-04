@@ -53,12 +53,15 @@ path, which is discovered using "scspkg path [package]".
 You can edit the modulefile by editing the json file found using "scspkg schema-path [package]".
 
 ```{bash}
-scspkg create [package] #Create an empty package
-scspkg remove [package] #Deletes the package permanently (including source)
-scspkg add_dep [package] dep ... #Add a dependency to a module
-scspkg rm_dep [package] dep ... #Remove a dependency from a module (but will not unload it)
-scspkg path [package] #Return the location of the package folder (used for setting prefixes when building; e.g., CMAKE_INSTALL_PREFIX)
-scspkg schema-path [package] #Return the location of the package modulefile schema (for custom edits)
+scspkg list
+scspkg create package1 ... packageN
+scspkg remove package1 ... packageN
+scspkg add_deps package dep1 ... depN
+scspkg rm_deps package dep1 ... depN
+scspkg pkg-root package1 ... packageN
+scspkg pkg-src package1 ... packageN
+scspkg schema-path package1 ... packageN
+scspkg show-schema package1 ... packageN
 ```
 
 ### Using the modulefiles

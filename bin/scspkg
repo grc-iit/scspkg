@@ -10,13 +10,15 @@ class ArgumentParser:
 
     def help(self, terminate=True):
         print("Usage:")
+        print("scspkg list")
         print("scspkg create package1 ... packageN")
         print("scspkg remove package1 ... packageN")
         print("scspkg add_deps package dep1 ... depN")
         print("scspkg rm_deps package dep1 ... depN")
-        print("scspkg path package1 ... packageN")
+        print("scspkg pkg-root package1 ... packageN")
+        print("scspkg pkg-src package1 ... packageN")
         print("scspkg schema-path package1 ... packageN")
-        print("scspkg show package1 ... packageN")
+        print("scspkg show-schema package1 ... packageN")
         if terminate:
             exit(1)
 
@@ -32,6 +34,7 @@ class Package:
         self.name = package_name
         self.root = os.getenv("SCSPKG_ROOT")
         self.pkg_root = os.path.join(self.root, "packages", package_name)
+        self.pkg_src = os.path.join(self.pkg_root, "src")
         self.module_path = os.path.join(self.root, "modulefiles", self.name)
         self.module_schema_path = os.path.join(self.root, "modulefiles_json", self.name)
         self.sections = {}
@@ -97,9 +100,16 @@ class Package:
                 del self.sections["deps"][dep]
         self.save_config()
 
-    def get_path(self):
+    def get_package_root(self):
         if os.path.exists(self.pkg_root):
             return self.pkg_root
+        else:
+            print("Error: Package {} does not exist".format(self.name))
+            exit(1)
+
+    def get_package_src(self):
+        if os.path.exists(self.pkg_src):
+            return self.pkg_src
         else:
             print("Error: Package {} does not exist".format(self.name))
             exit(1)
@@ -111,9 +121,9 @@ class Package:
             print("Error: Package {} does not exist".format(self.name))
             exit(1)
 
-    def print_module_schema(self):
+    def get_module_schema(self):
         if os.path.exists(self.module_schema_path):
-            print(json.dumps(self.sections, indent=4))
+            return json.dumps(self.sections, indent=4)
         else:
             print("Error: Package {} does not exist".format(self.name))
             exit(1)
@@ -127,6 +137,7 @@ class SCSPKG:
             package_path = os.path.join(self.root, "packages", package_name)
             if not os.path.exists(package_path):
                 os.mkdir(package_path)
+                os.mkdir(os.path.join(package_path, 'src'))
                 Package(package_name).save_config()
             else:
                 print("Error: the package {} already exists".format(package_name))
@@ -135,9 +146,24 @@ class SCSPKG:
         for package_name in packages:
             Package(package_name).remove()
 
-    def get_package_paths(self, packages):
+    def print_package_roots(self, packages):
         for package_name in packages:
-            print(Package(package_name).get_path())
+            print(Package(package_name).get_package_root())
+
+    def print_package_srcs(self, packages):
+        for package_name in packages:
+            print(Package(package_name).get_package_src())
+
+    def print_module_schema_paths(self, packages):
+        for package_name in packages:
+            print(Package(package_name).get_module_schema_path())
+
+    def print_module_schemas(self, packages):
+        for package_name in packages:
+            print(Package(package_name).get_module_schema())
+
+    def list(self):
+        os.listdir(os.path.join(self.root, "packages"))
 
 if __name__ == "__main__":
     args = ArgumentParser().run()
@@ -149,12 +175,16 @@ if __name__ == "__main__":
         Package(args.packages[0]).add_deps(args.packages[1:])
     elif args.option == 'rm_deps':
         Package(args.packages[0]).rm_deps(args.packages[1:])
-    elif args.option == 'path':
-        print(SCSPKG().get_package_paths(args.packages))
+    elif args.option == 'pkg-root':
+        SCSPKG().print_package_roots(args.packages)
+    elif args.option == 'pkg-src':
+        SCSPKG().print_package_srcs(args.packages)
     elif args.option == 'schema-path':
-        print(Package(args.packages[0]).get_module_schema_path())
-    elif args.option == 'show':
-        Package(args.packages[0]).print_module_schema()
+        SCSPKG().print_module_schema_paths(args.packages)
+    elif args.option == 'show-schema':
+        SCSPKG().print_module_schemas(args.packages)
+    elif args.option == 'list':
+        SCSPKG().list()
     else:
         print("Invalid option: {}".format(args.option))
         args.help()
