@@ -163,7 +163,8 @@ class SCSPKG:
             print(Package(package_name).get_module_schema())
 
     def list(self):
-        os.listdir(os.path.join(self.root, "packages"))
+        for item in os.listdir(os.path.join(self.root, "packages")):
+            print(item)
 
 if __name__ == "__main__":
     args = ArgumentParser().run()
