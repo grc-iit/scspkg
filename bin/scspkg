@@ -11,6 +11,7 @@ class ArgumentParser:
     def help(self, terminate=True):
         print("Usage:")
         print("scspkg list")
+        print("scspkg build-profile")
         print("scspkg create package1 ... packageN")
         print("scspkg remove package1 ... packageN")
         print("scspkg add_deps package dep1 ... depN")
@@ -192,6 +193,15 @@ class SCSPKG:
         for item in os.listdir(os.path.join(self.root, "packages")):
             print(item)
 
+    def build_profile(self):
+        print("PATH={};LD_LIBRARY_PATH={};LIBRARY_PATH={};INCLUDE={};CPATH={}".format(
+            os.environ['PATH'],
+            os.environ['LD_LIBRARY_PATH'],
+            os.environ['LIBRARY_PATH'],
+            os.environ['INCLUDE'],
+            os.environ['CPATH'],
+        ))
+
 if __name__ == "__main__":
     args = ArgumentParser().run()
     if args.option == 'create':
@@ -216,6 +226,8 @@ if __name__ == "__main__":
         SCSPKG().print_modules(args.packages)
     elif args.option == 'list':
         SCSPKG().list()
+    elif args.option == 'build-profile':
+        SCSPKG().build_profile()
     else:
         print("Invalid option: {}".format(args.option))
         args.help()
