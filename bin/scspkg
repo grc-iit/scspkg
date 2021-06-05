@@ -193,16 +193,21 @@ class SCSPKG:
         for item in os.listdir(os.path.join(self.root, "packages")):
             print(item)
 
-    def _get_env(self, var, suffix=''):
+    def _get_env(self, var, prefix=None):
         try:
-            return "{}={}{}".format(var, os.environ[var], suffix)
+            if prefix is None:
+                return "{}={}".format(var, os.environ[var])
+            else:
+                return "{}={}".format(prefix, os.environ[var])
         except:
             return None
 
     def build_profile(self):
-        vars = ['PATH', 'LD_LIBRARY_PATH', 'LIBRARY_PATH', 'INCLUDE', 'CPATH']
+        vars = ['PATH', 'LD_LIBRARY_PATH', 'LIBRARY_PATH', 'INCLUDE']
         profile = [self._get_env(var) for var in vars]
         profile = [val for val in profile if val is not None]
+        if _get_env('INCLUDE') is not None:
+            profile.append(self._get_env('INCLUDE', prefix='CPATH'))
         profile = ";".join(profile, )
         print(profile)
 
