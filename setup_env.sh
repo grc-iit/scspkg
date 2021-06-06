@@ -10,3 +10,4 @@ fi
 echo export SCSPKG_ROOT=${SCSPKG_ROOT} >> ~/.bashrc
 echo export PATH=${SCSPKG_ROOT}/bin:$PATH >> ~/.bashrc
 module use ${SCSPKG_ROOT}/modulefiles
+source ~/.bashrc

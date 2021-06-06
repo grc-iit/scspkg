@@ -7,14 +7,6 @@ A simple tool for building modulefiles and testing build scripts before building
 * Python3
 * Environment Modules
 
-### Enviornment Modules
-
-```{bash}
-spack install environment-modules
-spack load environment-modules
-source /etc/profile.d/modules.sh
-```
-
 ## Existing Installation
 
 If there is a version of SCSPKG currently installed, add it to your environment
