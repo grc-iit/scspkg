@@ -11,6 +11,7 @@ class ArgumentParser:
     def help(self, terminate=True):
         print("Usage:")
         print("scspkg list")
+        print("scspkg build-profile")
         print("scspkg create package1 ... packageN")
         print("scspkg remove package1 ... packageN")
         print("scspkg add_deps package dep1 ... depN")
@@ -20,6 +21,8 @@ class ArgumentParser:
         print("scspkg modules-path")
         print("scspkg schema-path package1 ... packageN")
         print("scspkg show-schema package1 ... packageN")
+        print("scspkg reset-schema package1 ... packageN")
+        print("scspkg show-module package1 ... packageN")
         if terminate:
             exit(1)
 
@@ -38,6 +41,13 @@ class Package:
         self.pkg_src = os.path.join(self.pkg_root, "src")
         self.module_path = os.path.join(self.root, "modulefiles", self.name)
         self.module_schema_path = os.path.join(self.root, "modulefiles_json", self.name)
+        self.build_config()
+        self._load_config()
+
+    def _exec(self, cmd):
+        subprocess.Popen(cmd.split()).wait()
+
+    def build_config(self):
         self.sections = {}
         self.sections["description"] = {
             "Name": self.name,
@@ -49,13 +59,10 @@ class Package:
             "PATH": [os.path.join(self.pkg_root, "bin")],
             "LD_LIBRARY_PATH": [os.path.join(self.pkg_root, "lib"), os.path.join(self.pkg_root, "lib64")],
             "LIBRARY_PATH": [os.path.join(self.pkg_root, "lib"), os.path.join(self.pkg_root, "lib64")],
-            "INCLUDE_PATH": [os.path.join(self.pkg_root, "include")],
+            "INCLUDE": [os.path.join(self.pkg_root, "include")],
             "CPATH": [os.path.join(self.pkg_root, "include")],
         }
-        self._load_config()
-
-    def _exec(self, cmd):
-        subprocess.Popen(cmd.split()).wait()
+        self.save_config()
 
     def _load_config(self):
         if os.path.exists(self.module_schema_path):
@@ -129,6 +136,14 @@ class Package:
             print("Error: Package {} does not exist".format(self.name))
             exit(1)
 
+    def get_modulefile(self):
+        try:
+            with open(self.module_path, 'r') as f:
+                return f.read()
+        except:
+            print("Error: Package {} does not exist".format(self.name))
+            exit(1)
+
 class SCSPKG:
     def __init__(self):
         self.root = os.getenv("SCSPKG_ROOT")
@@ -166,9 +181,39 @@ class SCSPKG:
         for package_name in packages:
             print(Package(package_name).get_module_schema())
 
+    def print_modules(self, packages):
+        for package_name in packages:
+            print(Package(package_name).get_modulefile())
+
+    def rebuild_module_schemas(self, packages):
+        if packages[0] == '*':
+            for package_name in os.listdir(os.path.join(self.root, "packages")):
+                Package(package_name).build_config()
+        else:
+            for package_name in packages:
+                Package(package_name).build_config()
+
     def list(self):
         for item in os.listdir(os.path.join(self.root, "packages")):
             print(item)
+
+    def _get_env(self, var, prefix=None):
+        try:
+            if prefix is None:
+                return "{}={}".format(var, os.environ[var])
+            else:
+                return "{}={}".format(prefix, os.environ[var])
+        except:
+            return None
+
+    def build_profile(self):
+        vars = ['PATH', 'LD_LIBRARY_PATH', 'LIBRARY_PATH', 'INCLUDE']
+        profile = [self._get_env(var) for var in vars]
+        profile = [val for val in profile if val is not None]
+        if self._get_env('INCLUDE') is not None:
+            profile.append(self._get_env('INCLUDE', prefix='CPATH'))
+        profile = ";".join(profile, )
+        print(profile)
 
 if __name__ == "__main__":
     args = ArgumentParser().run()
@@ -190,8 +235,14 @@ if __name__ == "__main__":
         SCSPKG().print_module_schema_paths(args.packages)
     elif args.option == 'show-schema':
         SCSPKG().print_module_schemas(args.packages)
+    elif args.option == 'reset-schema':
+        SCSPKG().rebuild_module_schemas(args.packages)
+    elif args.option == 'show-module':
+        SCSPKG().print_modules(args.packages)
     elif args.option == 'list':
         SCSPKG().list()
+    elif args.option == 'build-profile':
+        SCSPKG().build_profile()
     else:
         print("Invalid option: {}".format(args.option))
         args.help()

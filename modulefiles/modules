@@ -1,0 +1,11 @@
+#%Module1.0
+module-whatis "Name: modules"
+module-whatis "Version: None"
+module-whatis "Description: None"
+prepend-path PATH "/home/lukemartinlogan/Documents/Projects/PhD/scspkg/packages/modules/bin"
+prepend-path LD_LIBRARY_PATH "/home/lukemartinlogan/Documents/Projects/PhD/scspkg/packages/modules/lib"
+prepend-path LD_LIBRARY_PATH "/home/lukemartinlogan/Documents/Projects/PhD/scspkg/packages/modules/lib64"
+prepend-path LIBRARY_PATH "/home/lukemartinlogan/Documents/Projects/PhD/scspkg/packages/modules/lib"
+prepend-path LIBRARY_PATH "/home/lukemartinlogan/Documents/Projects/PhD/scspkg/packages/modules/lib64"
+prepend-path INCLUDE_PATH "/home/lukemartinlogan/Documents/Projects/PhD/scspkg/packages/modules/include"
+prepend-path CPATH "/home/lukemartinlogan/Documents/Projects/PhD/scspkg/packages/modules/include"

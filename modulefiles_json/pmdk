@@ -1,0 +1,27 @@
+{
+    "description": {
+        "Name": "pmdk",
+        "Version": "None",
+        "Description": "None"
+    },
+    "deps": {},
+    "prepends": {
+        "PATH": [
+            "/home/lukemartinlogan/Documents/Projects/PhD/scspkg/packages/pmdk/bin"
+        ],
+        "LD_LIBRARY_PATH": [
+            "/home/lukemartinlogan/Documents/Projects/PhD/scspkg/packages/pmdk/lib",
+            "/home/lukemartinlogan/Documents/Projects/PhD/scspkg/packages/pmdk/lib64"
+        ],
+        "LIBRARY_PATH": [
+            "/home/lukemartinlogan/Documents/Projects/PhD/scspkg/packages/pmdk/lib",
+            "/home/lukemartinlogan/Documents/Projects/PhD/scspkg/packages/pmdk/lib64"
+        ],
+        "INCLUDE": [
+            "/home/lukemartinlogan/Documents/Projects/PhD/scspkg/packages/pmdk/include"
+        ],
+        "CPATH": [
+            "/home/lukemartinlogan/Documents/Projects/PhD/scspkg/packages/pmdk/include"
+        ]
+    }
+}
