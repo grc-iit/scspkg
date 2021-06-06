@@ -62,6 +62,9 @@ class Package:
             "INCLUDE": [os.path.join(self.pkg_root, "include")],
             "CPATH": [os.path.join(self.pkg_root, "include")],
         }
+
+    def rebuild_config(self):
+        self.build_config()
         self.save_config()
 
     def _load_config(self):
@@ -74,7 +77,7 @@ class Package:
         with open(self.module_schema_path, 'w') as fp:
             json.dump(self.sections, fp, indent=4)
         #Save the module file
-        with open(self.module_path, 'wb') as fp:
+        with open(self.module_path, 'w') as fp:
             #The module header
             module = "#%Module1.0\n"
             #The module description
@@ -87,7 +90,7 @@ class Package:
             for env,values in self.sections["prepends"].items():
                 for value in values:
                     module += "prepend-path {} \"{}\"\n".format(env, value)
-            fp.write(bytes(module, "utf-8"))
+            fp.write(module)
 
     def remove(self):
         if os.path.exists(self.pkg_root):
@@ -188,10 +191,10 @@ class SCSPKG:
     def rebuild_module_schemas(self, packages):
         if packages[0] == '*':
             for package_name in os.listdir(os.path.join(self.root, "packages")):
-                Package(package_name).build_config()
+                Package(package_name).rebuild_config()
         else:
             for package_name in packages:
-                Package(package_name).build_config()
+                Package(package_name).rebuild_config()
 
     def list(self):
         for item in os.listdir(os.path.join(self.root, "packages")):
