@@ -14,8 +14,9 @@ class ArgumentParser:
         print("scspkg build-profile")
         print("scspkg create package1 ... packageN")
         print("scspkg remove package1 ... packageN")
-        print("scspkg add_deps package dep1 ... depN")
-        print("scspkg rm_deps package dep1 ... depN")
+        print("scspkg add-deps package dep1 ... depN")
+        print("scspkg rm-deps package dep1 ... depN")
+        print("scspkg ls-deps package dep1 ... depN")
         print("scspkg pkg-root package1 ... packageN")
         print("scspkg pkg-src package1 ... packageN")
         print("scspkg modules-path")
@@ -111,6 +112,10 @@ class Package:
                 del self.sections["deps"][dep]
         self.save_config()
 
+    def ls_deps(self):
+        for dep in self.sections["deps"].keys():
+            print(dep)
+
     def get_package_root(self):
         if os.path.exists(self.pkg_root):
             return self.pkg_root
@@ -164,6 +169,10 @@ class SCSPKG:
     def rm_packages(self, packages):
         for package_name in packages:
             Package(package_name).remove()
+
+    def ls_deps(self, packages):
+        for package_name in packages:
+            Package(package_name).ls_deps()
 
     def print_package_roots(self, packages):
         for package_name in packages:
@@ -224,10 +233,12 @@ if __name__ == "__main__":
         SCSPKG().create_packages(args.packages)
     elif args.option == 'remove':
         SCSPKG().rm_packages(args.packages)
-    elif args.option == 'add_deps':
+    elif args.option == 'add-deps':
         Package(args.packages[0]).add_deps(args.packages[1:])
-    elif args.option == 'rm_deps':
+    elif args.option == 'rm-deps':
         Package(args.packages[0]).rm_deps(args.packages[1:])
+    elif args.option == 'ls-deps':
+        SCSPKG().ls_deps(args.packages)
     elif args.option == 'pkg-root':
         SCSPKG().print_package_roots(args.packages)
     elif args.option == 'pkg-src':
