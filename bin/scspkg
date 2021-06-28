@@ -38,7 +38,8 @@ class Package:
     def __init__(self, package_name):
         self.name = package_name
         self.root = os.getenv("SCSPKG_ROOT")
-        self.pkg_root = os.path.join(self.root, "packages", package_name)
+        self.pkgs = os.path.join(self.root, "packages")
+        self.pkg_root = os.path.join(self.pkgs, package_name)
         self.pkg_src = os.path.join(self.pkg_root, "src")
         self.module_path = os.path.join(self.root, "modulefiles", self.name)
         self.module_schema_path = os.path.join(self.root, "modulefiles_json", self.name)
@@ -57,7 +58,7 @@ class Package:
         }
         self.sections["deps"] = {}
         self.sections["prepends"] = {
-            "PATH": [os.path.join(self.pkg_root, "bin")],
+            "PATH": [os.path.join(self.pkg_root, "bin"), os.path.join(self.pkg_root, "sbin")],
             "LD_LIBRARY_PATH": [os.path.join(self.pkg_root, "lib"), os.path.join(self.pkg_root, "lib64")],
             "LIBRARY_PATH": [os.path.join(self.pkg_root, "lib"), os.path.join(self.pkg_root, "lib64")],
             "INCLUDE": [os.path.join(self.pkg_root, "include")],
@@ -155,10 +156,11 @@ class Package:
 class SCSPKG:
     def __init__(self):
         self.root = os.getenv("SCSPKG_ROOT")
+        self.pkgs = os.path.join(self.root, "packages")
 
     def create_packages(self, packages):
         for package_name in packages:
-            package_path = os.path.join(self.root, "packages", package_name)
+            package_path = os.path.join(self.pkgs, package_name)
             if not os.path.exists(package_path):
                 os.mkdir(package_path)
                 os.mkdir(os.path.join(package_path, 'src'))

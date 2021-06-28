@@ -17,8 +17,10 @@ fi
 mkdir -p ${SCSPKG_ROOT}
 cp -r . ${SCSPKG_ROOT}
 echo export SCSPKG_ROOT=${SCSPKG_ROOT} >> ~/.bashrc
+echo export SCSPKG_ROOT=${SCSPKG_ROOT} >> ~/.bashrc
 echo export PATH=${SCSPKG_ROOT}/bin:$PATH >> ~/.bashrc
-module use ${SCSPKG_ROOT}/modulefiles
+#module use ${SCSPKG_ROOT}/modulefiles
 mkdir ${SCSPKG_ROOT}/packages
 mkdir ${SCSPKG_ROOT}/modulefiles
 mkdir ${SCSPKG_ROOT}/modulefiles_json
+source ~/.bashrc

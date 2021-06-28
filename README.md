@@ -7,6 +7,11 @@ A simple tool for building modulefiles and testing build scripts before building
 * Python3
 * Environment Modules
 
+```{bash}
+sudo apt install tcl-dev
+sudo yum install tcl-devel
+```
+
 ## Existing Installation
 
 If there is a version of SCSPKG currently installed, add it to your environment
