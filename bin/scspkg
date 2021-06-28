@@ -257,6 +257,8 @@ if __name__ == "__main__":
         SCSPKG().list()
     elif args.option == 'build-profile':
         SCSPKG().build_profile()
+    elif args.option == 'repo':
+        print(os.getenv("SCSPKG_ROOT"))
     else:
         print("Invalid option: {}".format(args.option))
         args.help()
