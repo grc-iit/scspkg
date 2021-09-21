@@ -19,7 +19,13 @@ cp -r . ${SCSPKG_ROOT}
 echo export SCSPKG_ROOT=${SCSPKG_ROOT} >> ~/.bashrc
 echo export SCSPKG_ROOT=${SCSPKG_ROOT} >> ~/.bashrc
 echo export PATH=${SCSPKG_ROOT}/bin:$PATH >> ~/.bashrc
-#module use ${SCSPKG_ROOT}/modulefiles
+if ! command -v module &> /dev/null
+then
+    echo "Warning: environment modules not installed"
+    exit
+else
+    module use ${SCSPKG_ROOT}/modulefiles
+fi
 mkdir ${SCSPKG_ROOT}/packages
 mkdir ${SCSPKG_ROOT}/modulefiles
 mkdir ${SCSPKG_ROOT}/modulefiles_json
