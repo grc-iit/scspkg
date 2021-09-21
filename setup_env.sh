@@ -9,5 +9,11 @@ fi
 
 echo export SCSPKG_ROOT=${SCSPKG_ROOT} >> ~/.bashrc
 echo export PATH=${SCSPKG_ROOT}/bin:$PATH >> ~/.bashrc
-module use ${SCSPKG_ROOT}/modulefiles
+if ! command -v module &> /dev/null
+then
+    echo "Warning: environment modules not installed"
+    exit
+else
+    module use ${SCSPKG_ROOT}/modulefiles
+fi
 source ~/.bashrc
