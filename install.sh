@@ -22,7 +22,6 @@ echo export PATH=${SCSPKG_ROOT}/bin:$PATH >> ~/.bashrc
 if ! command -v module &> /dev/null
 then
     echo "Warning: environment modules not installed"
-    exit
 else
     module use ${SCSPKG_ROOT}/modulefiles
 fi
