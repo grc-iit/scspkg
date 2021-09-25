@@ -250,9 +250,9 @@ if __name__ == "__main__":
     elif args.option == 'remove':
         SCSPKG().rm_packages(args.packages)
     elif args.option == 'set-env':
-        Package(args.packages[0]).set_env(args.packags[1], args.packages[2])
+        Package(args.packages[0]).set_env(args.packages[1], args.packages[2])
     elif args.option == 'rm-env':
-        Package(args.packages[0]).rm_env(args.packags[1], args.packages[2])
+        Package(args.packages[0]).rm_env(args.packages[1], args.packages[2])
     elif args.option == 'add-deps':
         Package(args.packages[0]).add_deps(args.packages[1:])
     elif args.option == 'rm-deps':
