@@ -14,6 +14,8 @@ class ArgumentParser:
         print("scspkg build-profile")
         print("scspkg create package1 ... packageN")
         print("scspkg remove package1 ... packageN")
+        print("scspkg set-env package env_name env_data")
+        print("scspkg rm-env package env_name")
         print("scspkg add-deps package dep1 ... depN")
         print("scspkg rm-deps package dep1 ... depN")
         print("scspkg ls-deps package dep1 ... depN")
@@ -57,6 +59,7 @@ class Package:
             "Description": "None"
         }
         self.sections["deps"] = {}
+        self.sections["setenvs"] = {}
         self.sections["prepends"] = {
             "PATH": [os.path.join(self.pkg_root, "bin"), os.path.join(self.pkg_root, "sbin")],
             "LD_LIBRARY_PATH": [os.path.join(self.pkg_root, "lib"), os.path.join(self.pkg_root, "lib64")],
@@ -88,6 +91,9 @@ class Package:
             #The module dependencies
             for dep in self.sections["deps"].keys():
                 module += "module load \"{}\"\n".format(dep)
+            #The module environment variables
+            for env_name,env_data in self.sections["setenvs"].items():
+                module += "setenv {} {}\n".format(env_name, env_data)
             #The module environment edits
             for env,values in self.sections["prepends"].items():
                 for value in values:
@@ -101,6 +107,14 @@ class Package:
             os.remove(self.module_path)
         if os.path.exists(self.module_schema_path):
             os.remove(self.module_schema_path)
+
+    def set_env(self, env_name, env_data):
+        self.sections["setenvs"][env_name] = env_data
+        self.save_config()
+
+    def rm_env(self, env_name):
+        del self.sections["setenvs"][env_name]
+        self.save_config()
 
     def add_deps(self, deps):
         for dep in deps:
@@ -235,6 +249,10 @@ if __name__ == "__main__":
         SCSPKG().create_packages(args.packages)
     elif args.option == 'remove':
         SCSPKG().rm_packages(args.packages)
+    elif args.option == 'set-env':
+        Package(args.packages[0]).set_env(args.packags[1], args.packages[2])
+    elif args.option == 'rm-env':
+        Package(args.packages[0]).rm_env(args.packags[1], args.packages[2])
     elif args.option == 'add-deps':
         Package(args.packages[0]).add_deps(args.packages[1:])
     elif args.option == 'rm-deps':
