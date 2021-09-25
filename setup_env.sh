@@ -13,6 +13,6 @@ if ! command -v module &> /dev/null
 then
     echo "Warning: environment modules not installed"
 else
-    module use ${SCSPKG_ROOT}/modulefiles
+    echo "module use \${SCSPKG_ROOT}/modulefiles" >> ~/.bashrc
 fi
 source ~/.bashrc
