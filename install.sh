@@ -17,8 +17,7 @@ fi
 mkdir -p ${SCSPKG_ROOT}
 cp -r . ${SCSPKG_ROOT}
 echo export SCSPKG_ROOT=${SCSPKG_ROOT} >> ~/.bashrc
-echo export SCSPKG_ROOT=${SCSPKG_ROOT} >> ~/.bashrc
-echo export PATH=${SCSPKG_ROOT}/bin:$PATH >> ~/.bashrc
+echo export PATH=${SCSPKG_ROOT}/bin:"\$PATH" >> ~/.bashrc
 if ! command -v module &> /dev/null
 then
     echo "Warning: environment modules not installed"
