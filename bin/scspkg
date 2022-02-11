@@ -13,9 +13,13 @@ class ArgumentParser:
         print("scspkg list")
         print("scspkg build-profile")
         print("scspkg create package1 ... packageN")
-        print("scspkg remove package1 ... packageN")
+        print("scspkg rm package1 ... packageN")
         print("scspkg set-env package env_name env_data")
+        print("scspkg prepend-env package env_name env_data")
+        print("scspkg append-env package env_name env_data")
         print("scspkg rm-env package env_name")
+        print("scspkg rm-prepend package env_name env_data")
+        print("scspkg rm-append package env_name env_data")
         print("scspkg add-deps package dep1 ... depN")
         print("scspkg rm-deps package dep1 ... depN")
         print("scspkg ls-deps package dep1 ... depN")
@@ -48,9 +52,6 @@ class Package:
         self.build_config()
         self._load_config()
 
-    def _exec(self, cmd):
-        subprocess.Popen(cmd.split()).wait()
-
     def build_config(self):
         self.sections = {}
         self.sections["description"] = {
@@ -67,6 +68,7 @@ class Package:
             "INCLUDE": [os.path.join(self.pkg_root, "include")],
             "CPATH": [os.path.join(self.pkg_root, "include")],
         }
+        self.sections["appends"] = {}
 
     def rebuild_config(self):
         self.build_config()
@@ -94,10 +96,14 @@ class Package:
             #The module environment variables
             for env_name,env_data in self.sections["setenvs"].items():
                 module += "setenv {} {}\n".format(env_name, env_data)
-            #The module environment edits
+            #The module environment prepends
             for env,values in self.sections["prepends"].items():
                 for value in values:
                     module += "prepend-path {} \"{}\"\n".format(env, value)
+            #The module environment appends
+            for env,values in self.sections["prepends"].items():
+                for value in values:
+                    module += "append-path {} \"{}\"\n".format(env, value)
             fp.write(module)
 
     def remove(self):
@@ -112,8 +118,24 @@ class Package:
         self.sections["setenvs"][env_name] = env_data
         self.save_config()
 
+    def prepend_env(self, env_name, env_data):
+        if env_name not in self.sections["prepends"]:
+            self.sections["prepends"][env_name] = []
+        self.sections["prepends"][env_name].insert(0, env_data)
+        self.save_config()
+
+    def append_env(self, env_name, env_data):
+        if env_name not in self.sections["appends"]:
+            self.sections["appends"][env_name] = []
+        self.sections["appends"][env_name].append(env_data)
+        self.save_config()
+
     def rm_env(self, env_name):
         del self.sections["setenvs"][env_name]
+        self.save_config()
+
+    def rm_prepend(self, env_name, env_data):
+        self.sections["prepends"][env_name].remove(env_data)
         self.save_config()
 
     def add_deps(self, deps):
@@ -247,12 +269,20 @@ if __name__ == "__main__":
     args = ArgumentParser().run()
     if args.option == 'create':
         SCSPKG().create_packages(args.packages)
-    elif args.option == 'remove':
+    elif args.option == 'rm':
         SCSPKG().rm_packages(args.packages)
     elif args.option == 'set-env':
         Package(args.packages[0]).set_env(args.packages[1], args.packages[2])
+    elif args.option == 'prepend-env':
+        Package(args.packages[0]).prepend_env(args.packages[1], args.packages[2])
+    elif args.option == 'append-env':
+        Package(args.packages[0]).append_env(args.packages[1], args.packages[2])
     elif args.option == 'rm-env':
-        Package(args.packages[0]).rm_env(args.packages[1], args.packages[2])
+        Package(args.packages[0]).rm_env(args.packages[1])
+    elif args.option == 'rm-prepend':
+        Package(args.packages[0]).rm_prepend(args.packages[1], args.packages[2])
+    elif args.option == 'rm-append':
+        Package(args.packages[0]).rm_append(args.packages[1], args.packages[2])
     elif args.option == 'add-deps':
         Package(args.packages[0]).add_deps(args.packages[1:])
     elif args.option == 'rm-deps':
