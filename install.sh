@@ -1,6 +1,7 @@
 #Usage: bash install.sh [SCSPKG_ROOT]
 #!/bin/bash
 
+#Detect the distribution
 if command -v apt &> /dev/null
 then
   IS_DEBIAN=true
@@ -11,26 +12,30 @@ then
   IS_RED_HAT=true
 fi
 
-if [ $# -lt 1 ]; then
-  SCSPKG_ROOT=`pwd`
-else
-  SCSPKG_ROOT=$1
-  if [ -d ${SCSPKG_ROOT}]; then
-    echo "${SCSPKG_ROOT} exists. Are you sure you want to override the current installation (y/n)?"
-    read OVERRIDE
-    if [ $OVERRIDE -neq "y"]; then
-      exit
-    fi
-  fi
-  mkdir -p ${SCSPKG_ROOT}
-  cp -r . ${SCSPKG_ROOT}
-fi
-
-export SCSPKG_ROOT=${SCSPKG_ROOT}
+#SCSPKG ROOT AND PATH
+export SCSPKG_ROOT=`pwd`
 export PATH=${SCSPKG_ROOT}/bin:$PATH
 
+#Setup bashrc
 echo "export SCSPKG_ROOT=${SCSPKG_ROOT}" >> ~/.bashrc
 echo "export PATH=${SCSPKG_ROOT}/bin:\$PATH" >> ~/.bashrc
+source ~/.bashrc
+
+#Check if this is an existing installation
+echo ${SCSPKG_ROOT}/packages
+if [ -d ${SCSPKG_ROOT}/packages ]
+then
+  echo "This SCSPKG is already initialized"
+  #Check if environment-modules was installed using scspkg
+  if [ -d ${SCSPKG_ROOT}/packages/modules ]
+  then
+    echo "source \`scspkg pkg-root modules\`/init/bash" >> ~/.bashrc
+    echo "module use \`scspkg modules-path\`" >> ~/.bashrc
+  fi
+fi
+exit
+
+#Create initial directories
 mkdir ${SCSPKG_ROOT}/packages
 mkdir ${SCSPKG_ROOT}/modulefiles
 mkdir ${SCSPKG_ROOT}/modulefiles_json
@@ -42,15 +47,10 @@ then
   if $IS_DEBIAN
   then
     sudo apt install tcl-dev
-  fi
-
   elif $IS_RED_HAT
   then
     sudo yum install tcl-devel
-  fi
-
   else
-  then
     echo "Error: only apt and yum are supported in this script. Sorry."
     exit
   fi
@@ -70,7 +70,6 @@ then
     make install
     echo "source \`scspkg pkg-root modules\`/init/bash" >> ~/.bashrc
     echo "module use \`scspkg modules-path\`" >> ~/.bashrc
-    source ~/.bashrc
 else
     echo "module use \${SCSPKG_ROOT}/modulefiles" >> ~/.bashrc
 fi

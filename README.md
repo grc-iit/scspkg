@@ -10,26 +10,19 @@ A simple tool for building modulefiles and testing build scripts before building
 
 These dependencies are automatically installed using install.sh for debian-based and red-hat based distros.
 
-## Existing Installation
-
-If there is a version of SCSPKG currently installed, add it to your environment
-```{bash}
-bash setup_env.sh [INSTALL_DIR]
-source ~/.bashrc
-```
-
-## New Installation
+## Installation / Environment Setup
 
 If there is no version currently installed:
 ```{bash}
-bash install.sh [INSTALL_DIR]
+cd /path/to/scspkg
+bash install.sh
 source ~/.bashrc
 ```
 
 ### Uninstallation
 
 ```{bash}
-rm -r $SCSPKG_ROOT
+rm -rf $SCSPKG_ROOT
 #Remove export commands from ~/.bashrc
 ```
 
