@@ -16,8 +16,8 @@ else
   cp -r . ${SCSPKG_ROOT}
 fi
 
-echo export SCSPKG_ROOT=${SCSPKG_ROOT} >> ~/.bashrc
-echo export PATH=${SCSPKG_ROOT}/bin:"\$PATH" >> ~/.bashrc
+echo "export SCSPKG_ROOT=${SCSPKG_ROOT}" >> ~/.bashrc
+echo "export PATH=${SCSPKG_ROOT}/bin:\$PATH" >> ~/.bashrc
 mkdir ${SCSPKG_ROOT}/packages
 mkdir ${SCSPKG_ROOT}/modulefiles
 mkdir ${SCSPKG_ROOT}/modulefiles_json
