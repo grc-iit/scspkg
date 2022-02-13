@@ -33,7 +33,6 @@ then
     echo "module use \`scspkg modules-path\`" >> ~/.bashrc
   fi
 fi
-exit
 
 #Create initial directories
 mkdir ${SCSPKG_ROOT}/packages
