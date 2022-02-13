@@ -1,12 +1,12 @@
 #Usage: bash install.sh [SCSPKG_ROOT]
 #!/bin/bash
 
-if command -v apt
+if command -v apt &> /dev/null
 then
   IS_DEBIAN=true
 fi
 
-if command -v yum
+if command -v yum &> /dev/null
 then
   IS_RED_HAT=true
 fi
