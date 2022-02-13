@@ -1,6 +1,16 @@
 #Usage: bash install.sh [SCSPKG_ROOT]
 #!/bin/bash
 
+if command -v apt
+then
+  IS_DEBIAN=true
+fi
+
+if command -v yum
+then
+  IS_RED_HAT=true
+fi
+
 if [ $# -lt 1 ]; then
   SCSPKG_ROOT=`pwd`
 else
@@ -25,6 +35,28 @@ mkdir ${SCSPKG_ROOT}/packages
 mkdir ${SCSPKG_ROOT}/modulefiles
 mkdir ${SCSPKG_ROOT}/modulefiles_json
 
+#Install TCLSH
+if ! command -v tclsh &> /dev/null
+then
+  echo "Warning: tclsh was not installed, will install now"
+  if $IS_DEBIAN
+  then
+    sudo apt install tcl-dev
+  fi
+
+  elif $IS_RED_HAT
+  then
+    sudo yum install tcl-devel
+  fi
+
+  else
+  then
+    echo "Error: only apt and yum are supported in this script. Sorry."
+    exit
+  fi
+fi
+
+#Install enviornment-modules
 if ! command -v module &> /dev/null
 then
     echo "Warning: environment modules not installed, will install now"
