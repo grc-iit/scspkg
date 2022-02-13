@@ -30,8 +30,9 @@ then
   if [ -d ${SCSPKG_ROOT}/packages/modules ]
   then
     echo "source \`scspkg pkg-root modules\`/init/bash" >> ~/.bashrc
-    echo "module use \`scspkg modules-path\`" >> ~/.bashrc
   fi
+  echo "module use \`scspkg modules-path\`" >> ~/.bashrc
+  exit
 fi
 
 #Create initial directories
