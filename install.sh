@@ -46,10 +46,10 @@ then
   echo "Warning: tclsh was not installed, will install now"
   if $IS_DEBIAN
   then
-    sudo apt install tcl-dev
+    sudo apt install -y tcl-dev python3 python3-pip
   elif $IS_RED_HAT
   then
-    sudo yum install tcl-devel
+    sudo yum install -y tcl-devel python3 python3-pip
   else
     echo "Error: only apt and yum are supported in this script. Sorry."
     exit
