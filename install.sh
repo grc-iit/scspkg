@@ -54,6 +54,7 @@ then
     echo "Error: only apt and yum are supported in this script. Sorry."
     exit
   fi
+  sudo pip3 install --upgrade pip
 fi
 
 #Install enviornment-modules
