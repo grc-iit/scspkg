@@ -28,6 +28,7 @@ class ArgumentParser:
         print("scspkg pkg-root package1 ... packageN")
         print("scspkg pkg-src package1 ... packageN")
         print("scspkg module-path package1 ... packageN")
+        print("scspkg modules-path")
         print("scspkg schema-path package1 ... packageN")
         print("scspkg show-schema package1 ... packageN")
         print("scspkg reset-schema package1 ... packageN")
@@ -259,6 +260,9 @@ class SCSPKG:
         for package_name in packages:
             print(os.path.join(self.root, "modulefiles", package_name))
 
+    def print_modules_path(self):
+        print(os.path.join(self.root, "modulefiles"))
+
     def print_module_schema_paths(self, packages):
         for package_name in packages:
             print(Package(package_name).get_module_schema_path())
@@ -329,6 +333,8 @@ if __name__ == "__main__":
         SCSPKG().print_package_srcs(args.packages)
     elif args.option == 'module-path':
         SCSPKG().print_module_path(args.packages)
+    elif args.option == 'modules-path':
+        SCSPKG().print_modules_path()
     elif args.option == 'schema-path':
         SCSPKG().print_module_schema_paths(args.packages)
     elif args.option == 'show-schema':
