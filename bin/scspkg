@@ -309,7 +309,7 @@ if __name__ == "__main__":
     args = ArgumentParser().run()
     if args.option == 'create':
         SCSPKG().create_packages(args.packages)
-    if args.option == 'from-spack':
+    elif args.option == 'from-spack':
         SCSPKG().create_from_spack(args.packages)
     elif args.option == 'rm':
         SCSPKG().rm_packages(args.packages)
