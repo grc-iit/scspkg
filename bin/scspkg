@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
-import sys,os,subprocess
+import sys,os
 import shutil
 import json
+
+from jarvis_cd.basic.exec_node import ExecNode
+import re
 
 class ArgumentParser:
     def __init__(self):
@@ -13,19 +16,18 @@ class ArgumentParser:
         print("scspkg list")
         print("scspkg build-profile")
         print("scspkg create package1 ... packageN")
+        print("scspkg from-spack package1 ... packageN")
         print("scspkg rm package1 ... packageN")
         print("scspkg set-env package env_name env_data")
         print("scspkg prepend-env package env_name env_data")
-        print("scspkg append-env package env_name env_data")
         print("scspkg rm-env package env_name")
         print("scspkg rm-prepend package env_name env_data")
-        print("scspkg rm-append package env_name env_data")
         print("scspkg add-deps package dep1 ... depN")
         print("scspkg rm-deps package dep1 ... depN")
         print("scspkg ls-deps package dep1 ... depN")
         print("scspkg pkg-root package1 ... packageN")
         print("scspkg pkg-src package1 ... packageN")
-        print("scspkg modules-path")
+        print("scspkg module-path package1 ... packageN")
         print("scspkg schema-path package1 ... packageN")
         print("scspkg show-schema package1 ... packageN")
         print("scspkg reset-schema package1 ... packageN")
@@ -52,23 +54,31 @@ class Package:
         self.build_config()
         self._load_config()
 
-    def build_config(self):
-        self.sections = {}
-        self.sections["description"] = {
-            "Name": self.name,
+    @staticmethod
+    def _build_config(pkg_root, name):
+        sections = {}
+        sections["description"] = {
+            "Name": name,
             "Version": "None",
             "Description": "None"
         }
-        self.sections["deps"] = {}
-        self.sections["setenvs"] = {}
-        self.sections["prepends"] = {
-            "PATH": [os.path.join(self.pkg_root, "bin"), os.path.join(self.pkg_root, "sbin")],
-            "LD_LIBRARY_PATH": [os.path.join(self.pkg_root, "lib"), os.path.join(self.pkg_root, "lib64")],
-            "LIBRARY_PATH": [os.path.join(self.pkg_root, "lib"), os.path.join(self.pkg_root, "lib64")],
-            "INCLUDE": [os.path.join(self.pkg_root, "include")],
-            "CPATH": [os.path.join(self.pkg_root, "include")],
+        sections["deps"] = {}
+        sections["setenvs"] = {}
+        sections["prepends"] = {
+            "PATH": [os.path.join(pkg_root, "bin"), os.path.join(pkg_root, "sbin")],
+            "LD_LIBRARY_PATH": [os.path.join(pkg_root, "lib"), os.path.join(pkg_root, "lib64")],
+            "LIBRARY_PATH": [os.path.join(pkg_root, "lib"), os.path.join(pkg_root, "lib64")],
+            "INCLUDE": [os.path.join(pkg_root, "include")],
+            "CPATH": [os.path.join(pkg_root, "include")],
+            "CFLAGS": [os.path.join(pkg_root, "include")],
+            "LDFLAGS": [os.path.join(pkg_root, "lib"), os.path.join(pkg_root, "lib64")]
         }
-        self.sections["appends"] = {}
+        return sections
+
+    def build_config(self, pkg_root=None):
+        if pkg_root is None:
+            pkg_root = self.pkg_root
+        self.sections = self._build_config(pkg_root, self.name)
 
     def rebuild_config(self):
         self.build_config()
@@ -94,16 +104,21 @@ class Package:
             for dep in self.sections["deps"].keys():
                 module += "module load \"{}\"\n".format(dep)
             #The module environment variables
-            for env_name,env_data in self.sections["setenvs"].items():
-                module += "setenv {} {}\n".format(env_name, env_data)
+            for env,env_data in self.sections["setenvs"].items():
+                module += "setenv {} \"{}\"\n".format(env, env_data)
             #The module environment prepends
             for env,values in self.sections["prepends"].items():
-                for value in values:
-                    module += "prepend-path {} \"{}\"\n".format(env, value)
-            #The module environment appends
-            for env,values in self.sections["prepends"].items():
-                for value in values:
-                    module += "append-path {} \"{}\"\n".format(env, value)
+                if env == 'LDFLAGS':
+                    ldflags = [f"-L {value}" for value in values]
+                    for value in ldflags:
+                        module += "prepend-path --delim \" \" {} \"{}\"\n".format(env, value)
+                if env == 'CFLAGS':
+                    cflags = [f"-I {value}" for value in values]
+                    for value in cflags:
+                        module += "prepend-path --delim \" \" {} \"{}\"\n".format(env, value)
+                else:
+                    for value in values:
+                        module += "prepend-path {} \"{}\"\n".format(env, value)
             fp.write(module)
 
     def remove(self):
@@ -122,12 +137,6 @@ class Package:
         if env_name not in self.sections["prepends"]:
             self.sections["prepends"][env_name] = []
         self.sections["prepends"][env_name].insert(0, env_data)
-        self.save_config()
-
-    def append_env(self, env_name, env_data):
-        if env_name not in self.sections["appends"]:
-            self.sections["appends"][env_name] = []
-        self.sections["appends"][env_name].append(env_data)
         self.save_config()
 
     def rm_env(self, env_name):
@@ -204,6 +213,32 @@ class SCSPKG:
             else:
                 print("Error: the package {} already exists".format(package_name))
 
+    def _spack_module_path(self, spack_query):
+        spack_mod_path = None
+        spack_mod_path_stdout = ExecNode('spack path', f'spack find --paths {spack_query}').Run().output[0]['localhost']['stdout']
+        for line in spack_mod_path_stdout:
+            grp = re.search(f'({os.environ["SPACK_ROOT"]}.*)', line)
+            if grp:
+                spack_mod_path = grp.group(1)
+        return spack_mod_path
+
+    def create_from_spack(self, packages):
+        for package_name in packages:
+            new_package_name = f"{package_name}-mod"
+            new_package_path = os.path.join(self.pkgs, new_package_name)
+            if not os.path.exists(new_package_path):
+                os.mkdir(new_package_path)
+                os.mkdir(os.path.join(new_package_path, 'src'))
+                pkg_root = self._spack_module_path(package_name)
+                if pkg_root is None:
+                    print('Error: could not find spack module')
+                    exit(1)
+                pkg = Package(new_package_name)
+                pkg.build_config(pkg_root)
+                pkg.save_config()
+            else:
+                print("Error: the package {} already exists".format(new_package_name))
+
     def rm_packages(self, packages):
         for package_name in packages:
             Package(package_name).remove()
@@ -220,8 +255,9 @@ class SCSPKG:
         for package_name in packages:
             print(Package(package_name).get_package_src())
 
-    def print_module_path(self):
-        print(os.path.join(self.root, "modulefiles"))
+    def print_module_path(self, packages):
+        for package_name in packages:
+            print(os.path.join(self.root, "modulefiles", package_name))
 
     def print_module_schema_paths(self, packages):
         for package_name in packages:
@@ -269,20 +305,18 @@ if __name__ == "__main__":
     args = ArgumentParser().run()
     if args.option == 'create':
         SCSPKG().create_packages(args.packages)
+    if args.option == 'from-spack':
+        SCSPKG().create_from_spack(args.packages)
     elif args.option == 'rm':
         SCSPKG().rm_packages(args.packages)
     elif args.option == 'set-env':
         Package(args.packages[0]).set_env(args.packages[1], args.packages[2])
     elif args.option == 'prepend-env':
         Package(args.packages[0]).prepend_env(args.packages[1], args.packages[2])
-    elif args.option == 'append-env':
-        Package(args.packages[0]).append_env(args.packages[1], args.packages[2])
     elif args.option == 'rm-env':
         Package(args.packages[0]).rm_env(args.packages[1])
     elif args.option == 'rm-prepend':
         Package(args.packages[0]).rm_prepend(args.packages[1], args.packages[2])
-    elif args.option == 'rm-append':
-        Package(args.packages[0]).rm_append(args.packages[1], args.packages[2])
     elif args.option == 'add-deps':
         Package(args.packages[0]).add_deps(args.packages[1:])
     elif args.option == 'rm-deps':
@@ -293,8 +327,8 @@ if __name__ == "__main__":
         SCSPKG().print_package_roots(args.packages)
     elif args.option == 'pkg-src':
         SCSPKG().print_package_srcs(args.packages)
-    elif args.option == 'modules-path':
-        SCSPKG().print_module_path()
+    elif args.option == 'module-path':
+        SCSPKG().print_module_path(args.packages)
     elif args.option == 'schema-path':
         SCSPKG().print_module_schema_paths(args.packages)
     elif args.option == 'show-schema':

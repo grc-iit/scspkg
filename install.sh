@@ -35,6 +35,8 @@ then
   exit
 fi
 
+#TODO: Install jarvis-cd
+
 #Create initial directories
 mkdir ${SCSPKG_ROOT}/packages
 mkdir ${SCSPKG_ROOT}/modulefiles
