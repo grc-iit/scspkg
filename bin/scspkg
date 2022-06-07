@@ -108,18 +108,20 @@ class Package:
             for env,env_data in self.sections["setenvs"].items():
                 module += "setenv {} \"{}\"\n".format(env, env_data)
             #The module environment prepends
-            # for env,values in self.sections["prepends"].items():
-            #     if env == 'LDFLAGS':
-            #         ldflags = [f"-L {value}" for value in values]
-            #         for value in ldflags:
-            #             module += "prepend-path --delim \"  \" {} \"{}\"\n".format(env, value)
-            #     elif env == 'CFLAGS':
-            #         cflags = [f"-I {value}" for value in values]
-            #         for value in cflags:
-            #             module += "prepend-path --delim \"  \" {} \"{}\"\n".format(env, value)
-            #     else:
-            #         for value in values:
-            #             module += "prepend-path {} \"{}\"\n".format(env, value)
+            for env,values in self.sections["prepends"].items():
+                if env == 'LDFLAGS':
+                    #ldflags = [f"-L {value}" for value in values]
+                    #for value in ldflags:
+                    #    module += "prepend-path --delim \"  \" {} \"{}\"\n".format(env, value)
+                    pass
+                elif env == 'CFLAGS':
+                    #cflags = [f"-I {value}" for value in values]
+                    #for value in cflags:
+                    #    module += "prepend-path --delim \"  \" {} \"{}\"\n".format(env, value)
+                    pass
+                else:
+                    for value in values:
+                        module += "prepend-path {} \"{}\"\n".format(env, value)
             fp.write(module)
 
     def remove(self):
