@@ -111,12 +111,12 @@ class Package:
             for env,values in self.sections["prepends"].items():
                 if env == 'LDFLAGS':
                     for value in values:
-                        module += "prepend-path --delim \" \" {} -L\n".format(env)
                         module += "prepend-path --delim \" \" {} {}\n".format(env, value)
+                        module += "prepend-path --delim \" \" {} -L\n".format(env)
                 elif env == 'CFLAGS':
                     for value in values:
-                        module += "prepend-path --delim \" \" {} -I\n".format(env)
                         module += "prepend-path --delim \" \" {} {}\n".format(env, value)
+                        module += "prepend-path --delim \" \" {} -I\n".format(env)
                 else:
                     for value in values:
                         module += "prepend-path {} \"{}\"\n".format(env, value)
