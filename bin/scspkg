@@ -113,7 +113,7 @@ class Package:
                     ldflags = [f"-L {value}" for value in values]
                     for value in ldflags:
                         module += "prepend-path --delim \" \" {} \"{}\"\n".format(env, value)
-                if env == 'CFLAGS':
+                elif env == 'CFLAGS':
                     cflags = [f"-I {value}" for value in values]
                     for value in cflags:
                         module += "prepend-path --delim \" \" {} \"{}\"\n".format(env, value)
