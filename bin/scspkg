@@ -218,11 +218,7 @@ class SCSPKG:
 
     def _spack_module_path(self, spack_query):
         spack_mod_path = None
-        spack_mod_path_stdout = ExecNode('spack path', f'spack find --paths {spack_query}').Run().output[0]['localhost']['stdout']
-        for line in spack_mod_path_stdout:
-            grp = re.search(f'({os.environ["SPACK_ROOT"]}.*)', line)
-            if grp:
-                spack_mod_path = grp.group(1)
+        spack_mod_path_stdout = ExecNode(f'spack find --format \"{prefix}\" {spack_query}').Run().GetLocalStdout()[0]
         return spack_mod_path
 
     def create_from_spack(self, packages):
