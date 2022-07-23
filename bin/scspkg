@@ -3,7 +3,7 @@ import sys,os
 import shutil
 import json
 
-from jarvis_cd.basic.exec_node import ExecNode
+from jarvis_cd.shell.exec_node import ExecNode
 import re
 
 class ArgumentParser:
