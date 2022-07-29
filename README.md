@@ -7,7 +7,7 @@ A simple tool for building modulefiles and testing build scripts before building
 * Python3
 * tclsh
 * Environment Modules
-* jarvis-cd
+* jarvis-cd (we assume this is already installed)
 
 These dependencies are automatically installed using install.sh for debian-based and red-hat based distros.
 
