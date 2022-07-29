@@ -4,6 +4,7 @@ import shutil
 import json
 
 from jarvis_cd.shell.exec_node import ExecNode
+from jarvis_cd.spack.spack_prefix_node import SpackPrefixNode
 import re
 
 class ArgumentParser:
@@ -16,7 +17,7 @@ class ArgumentParser:
         print("scspkg list")
         print("scspkg build-profile")
         print("scspkg create package1 ... packageN")
-        print("scspkg from-spack package1 ... packageN")
+        print("scspkg from-spack spack_query new_package_name")
         print("scspkg rm package1 ... packageN")
         print("scspkg set-env package env_name env_data")
         print("scspkg prepend-env package env_name env_data")
@@ -216,27 +217,20 @@ class SCSPKG:
             else:
                 print("Error: the package {} already exists".format(package_name))
 
-    def _spack_module_path(self, spack_query):
-        spack_mod_path = None
-        spack_mod_path_stdout = ExecNode(f'spack find --format \"{prefix}\" {spack_query}').Run().GetLocalStdout()[0]
-        return spack_mod_path
-
-    def create_from_spack(self, packages):
-        for package_name in packages:
-            new_package_name = f"{package_name}-mod"
-            new_package_path = os.path.join(self.pkgs, new_package_name)
-            if not os.path.exists(new_package_path):
-                os.mkdir(new_package_path)
-                os.mkdir(os.path.join(new_package_path, 'src'))
-                pkg_root = self._spack_module_path(package_name)
-                if pkg_root is None:
-                    print('Error: could not find spack module')
-                    exit(1)
-                pkg = Package(new_package_name)
-                pkg.build_config(pkg_root)
-                pkg.save_config()
-            else:
-                print("Error: the package {} already exists".format(new_package_name))
+    def create_from_spack(self, spack_query, new_package_name):
+        new_package_path = os.path.join(self.pkgs, new_package_name)
+        if not os.path.exists(new_package_path):
+            os.mkdir(new_package_path)
+            os.mkdir(os.path.join(new_package_path, 'src'))
+            pkg_root = SpackPrefixNode(spack_query).Run().GetPrefix()
+            if pkg_root is None:
+                print('Error: could not find spack module')
+                exit(1)
+            pkg = Package(new_package_name)
+            pkg.build_config(pkg_root)
+            pkg.save_config()
+        else:
+            print("Error: the package {} already exists".format(new_package_name))
 
     def rm_packages(self, packages):
         for package_name in packages:
@@ -308,7 +302,7 @@ if __name__ == "__main__":
     if args.option == 'create':
         SCSPKG().create_packages(args.packages)
     elif args.option == 'from-spack':
-        SCSPKG().create_from_spack(args.packages)
+        SCSPKG().create_from_spack(args.packages[0], args.packages[1])
     elif args.option == 'rm':
         SCSPKG().rm_packages(args.packages)
     elif args.option == 'set-env':
