@@ -12,13 +12,22 @@ then
   IS_RED_HAT=true
 fi
 
+#Source scspkg_env in bashrc at head of file
+if [[ `cat ${HOME}/.bashrc | grep "source ${PWD}/.scspkg_env"` ]]
+then
+  echo "Already sourcing ${PWD}/.scspkg_env in bashrc"
+else
+  echo "Adding source ${PWD}/.scspkg_env to bashrc"
+  sed -i.old "1s;^;source ${PWD}/.scspkg_env\\n;" ${HOME}/.bashrc
+fi
+
 #SCSPKG ROOT AND PATH
 export SCSPKG_ROOT=`pwd`
 export PATH=${SCSPKG_ROOT}/bin:$PATH
 
-#Setup bashrc
-echo "export SCSPKG_ROOT=${SCSPKG_ROOT}" >> ~/.bashrc
-echo "export PATH=${SCSPKG_ROOT}/bin:\$PATH" >> ~/.bashrc
+#Setup scspkg_env
+echo "export SCSPKG_ROOT=${SCSPKG_ROOT}" >> .scspkg_env
+echo "export PATH=${SCSPKG_ROOT}/bin:\$PATH" >> .scspkg_env
 source ~/.bashrc
 
 #Check if this is an existing installation
@@ -29,13 +38,11 @@ then
   #Check if environment-modules was installed using scspkg
   if [ -d ${SCSPKG_ROOT}/packages/modules ]
   then
-    echo "source \`scspkg pkg-root modules\`/init/bash" >> ~/.bashrc
+    echo "source \`scspkg pkg-root modules\`/init/bash" >> .scspkg_env
   fi
-  echo "module use \`scspkg modules-path\`" >> ~/.bashrc
+  echo "module use \`scspkg modules-path\`" >> .scspkg_env
   exit
 fi
-
-#TODO: Install jarvis-cd
 
 #Create initial directories
 mkdir ${SCSPKG_ROOT}/packages
@@ -71,8 +78,8 @@ then
     ./configure --prefix=`scspkg pkg-root modules`
     make
     make install
-    echo "source \`scspkg pkg-root modules\`/init/bash" >> ~/.bashrc
-    echo "module use \`scspkg modules-path\`" >> ~/.bashrc
+    echo "source \`scspkg pkg-root modules\`/init/bash" >> .scspkg_env
+    echo "module use \`scspkg modules-path\`" >> .scspkg_env
 else
-    echo "module use \${SCSPKG_ROOT}/modulefiles" >> ~/.bashrc
+    echo "module use \${SCSPKG_ROOT}/modulefiles" >> .scspkg_env
 fi
