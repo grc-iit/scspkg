@@ -12,19 +12,13 @@ then
   IS_RED_HAT=true
 fi
 
-#Detect if JARVIS installed
-if [ -z "$JARVIS_ROOT" ]; then
-  echo ERROR: JARVIS needs to be installed for SCSPKG
-  exit
-fi
-
 #SCSPKG ROOT AND PATH
 export SCSPKG_ROOT=`pwd`
 export PATH=${SCSPKG_ROOT}/bin:$PATH
 
-#Add to jarvis_env
-echo "export SCSPKG_ROOT=${SCSPKG_ROOT}" >> ${JARVIS_ROOT}/.jarvis_env
-echo "export PATH=${SCSPKG_ROOT}/bin:\$PATH" >> ${JARVIS_ROOT}/.jarvis_env
+#Add to bashrc
+echo "export SCSPKG_ROOT=${SCSPKG_ROOT}" >> ~/.bashrc
+echo "export PATH=${SCSPKG_ROOT}/bin:\$PATH" >> ~/.bashrc
 source ~/.bashrc
 
 #Check if this is an existing installation
@@ -68,8 +62,8 @@ then
     ./configure --prefix=`scspkg pkg-root modules`
     make
     make install
-    echo "source \`scspkg pkg-root modules\`/init/bash" >> ${JARVIS_ROOT}/.jarvis_env
-    echo "module use \`scspkg modules-path\`" >> ${JARVIS_ROOT}/.jarvis_env
+    echo "source \`scspkg pkg-root modules\`/init/bash" >> ~/.bashrc
+    echo "module use \`scspkg modules-path\`" >> ~/.bashrc
 else
-    echo "module use \${SCSPKG_ROOT}/modulefiles" >> ${JARVIS_ROOT}/.jarvis_env
+    echo "module use \${SCSPKG_ROOT}/modulefiles" >> ~/.bashrc
 fi
