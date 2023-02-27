@@ -264,20 +264,25 @@ class SCSPKG:
     def _get_env(self, var, prefix=None):
         try:
             if prefix is None:
-                return "{}={}".format(var, os.environ[var])
+                return "{}={}".format(var, self._os_env(var))
             else:
-                return "{}={}".format(prefix, os.environ[var])
+                return "{}={}".format(prefix, self._os_env(var))
         except:
             return None
 
     def _copy_env_parents(self, vars, prefix):
         cpy = set()
         for var in vars:
-            paths = os.environ[var].split(':')
+            paths = self._os_env(var).split(':')
             for path in paths:
                 cpy.add(os.path.dirname(path))
         cpy = ":".join(list(cpy))
         return f"{prefix}={cpy}"
+
+    def _os_env(self, name):
+        if name in os.environ:
+            return os.environ[name]
+        return ""
 
     def build_profile(self):
         vars = ['PATH', 'LD_LIBRARY_PATH', 'LIBRARY_PATH', 'INCLUDE']
