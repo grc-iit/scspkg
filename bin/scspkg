@@ -273,29 +273,17 @@ class SCSPKG:
         except:
             return None
 
-    def _copy_env_parents(self, vars, prefix):
-        cpy = set()
-        for var in vars:
-            paths = self._os_env(var).split(':')
-            for path in paths:
-                if len(path):
-                    cpy.add(os.path.dirname(path))
-        cpy = ":".join(list(cpy))
-        if len(cpy):
-            return f"{prefix}={cpy}"
-        return None
-
     def _os_env(self, name):
         if name in os.environ:
             return os.environ[name]
         return ""
 
     def build_profile(self):
-        vars = ['PATH', 'LD_LIBRARY_PATH', 'LIBRARY_PATH', 'INCLUDE', 'PKG_CONFIG_PATH']
-        CMAKE_PREFIX_PATH = self._copy_env_parents(vars, 'CMAKE_PREFIX_PATH')
+        vars = ['PATH', 'LD_LIBRARY_PATH', 'LIBRARY_PATH', 'INCLUDE', 'PKG_CONFIG_PATH',
+                'CMAKE_PREFIX_PATH']
+
         profile = [self._get_env(var) for var in vars]
         profile = [val for val in profile if val is not None]
-        profile.append(CMAKE_PREFIX_PATH)
         if self._get_env('INCLUDE') is not None:
             profile.append(self._get_env('INCLUDE', prefix='CPATH'))
         profile = ";".join(profile, )
