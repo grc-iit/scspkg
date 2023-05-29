@@ -280,7 +280,7 @@ class SCSPKG:
 
     def build_profile(self):
         vars = ['PATH', 'LD_LIBRARY_PATH', 'LIBRARY_PATH', 'INCLUDE',
-                'PKG_CONFIG_PATH', 'CMAKE_PREFIX_PATH' 'JAVA_HOME']
+                'PKG_CONFIG_PATH', 'CMAKE_PREFIX_PATH', 'JAVA_HOME']
         profile = [self._get_env(var) for var in vars]
         profile = [val for val in profile if val is not None]
         if self._get_env('INCLUDE') is not None:
