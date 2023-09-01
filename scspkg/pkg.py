@@ -49,9 +49,8 @@ class Package:
                              os.path.join(self.pkg_root, 'lib64')],
             'INCLUDE': [os.path.join(self.pkg_root, 'include')],
             'CPATH': [os.path.join(self.pkg_root, 'include')],
-            'CFLAGS': [os.path.join(self.pkg_root, 'include')],
-            'LDFLAGS': [os.path.join(self.pkg_root, 'lib'),
-                        os.path.join(self.pkg_root, 'lib64')]
+            'CFLAGS': [],
+            'LDFLAGS': []
         }
         return self
 
@@ -69,6 +68,14 @@ class Package:
         self.save()
         return self
 
+    def load(self):
+        """
+        Load the YAML config from the package root
+        """
+        if os.path.exists(self.module_schema_path):
+            self.sections = YamlFile(self.module_schema_path).load()
+        return self
+
     def save(self):
         """
         Save the YAML + modulefiles to the directories.
@@ -79,14 +86,6 @@ class Package:
         #     self._save_as_tcl()
         # else:
         #     self._save_as_lmod()
-        return self
-
-    def load(self):
-        """
-        Load the YAML config from the package root
-        """
-        if os.path.exists(self.module_schema_path):
-            self.sections = YamlFile(self.module_schema_path).load()
         return self
 
     def _save_as_tcl(self):
