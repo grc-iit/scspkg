@@ -63,6 +63,9 @@ class Package:
         """
         os.makedirs(self.pkg_root, exist_ok=True)
         os.makedirs(self.pkg_src, exist_ok=True)
+        os.makedirs(f'{self.pkg_root}/include', exist_ok=True)
+        os.makedirs(f'{self.pkg_root}/lib', exist_ok=True)
+        os.makedirs(f'{self.pkg_root}/lib64', exist_ok=True)
         self.save()
         return self
 
