@@ -2,7 +2,7 @@
 
 A simple tool for building modulefiles and testing build scripts before building 
 a spack script. It's also useful for when spack fails. 
-The wiki is [here](https://github.com/scs-lab/scspkg/wiki).
+More detailed doucmentation for its usage is [here](https://github.com/scs-lab/scspkg/wiki).
 
 ## 0.1. Dependencies
 
@@ -48,7 +48,7 @@ fi
 cd /path/to/scspkg
 python3 -m pip install -r requirements.txt
 python3 -m pip install -e .
-echo "module use \`scspkg modules path\`" >> ~/.bashrc
+echo "module use \`scspkg module dir\`" >> ~/.bashrc
 ```
 
 ## 0.3. Setup

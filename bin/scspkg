@@ -238,8 +238,8 @@ class ScspkgArgs(ArgParse):
             }
         ])
 
-        # scspkg modules dir
-        self.add_menu('modules dir',
+        # scspkg module dir
+        self.add_menu('module dir',
                       msg='Get the path to the modulefile directory')
 
         # scspkg module path
@@ -365,7 +365,7 @@ class ScspkgArgs(ArgParse):
     def schema_show(self):
         print(Package(self.kwargs['PKG_NAME']).get_module_schema())
 
-    def modules_dir(self):
+    def module_dir(self):
         print(self.scspkg.module_dir)
 
     def module_path(self):
