@@ -1,12 +1,10 @@
-# SCSPKG
-
 A simple tool for building modulefiles and testing build scripts before building 
 a spack script. It's also useful for when spack fails. 
 More detailed doucmentation for its usage is [here](https://github.com/scs-lab/scspkg/wiki).
 
-## 0.1. Dependencies
+# 0.1. Dependencies
 
-### 0.1.1. Jarvis-Util
+## 0.1.1. Jarvis-Util
 SCSPKG depends on [jarvis-util](https://github.com/scs-lab/jarvis-util).
 It's a library which contains wrappers around shell commands.
 
@@ -17,7 +15,7 @@ python3 -m pip install -r requirements.txt
 python3 -m pip install -e .
 ```
 
-### 0.1.2. LMOD or Environment Modules
+## 0.1.2. LMOD or Environment Modules
 
 To install LMOD, follow this [guide](https://lmod.readthedocs.io/en/latest/030_installing.html).
 LMOD is recommended -- only use environment modules if that's what your system
@@ -42,7 +40,7 @@ if ! shopt -q login_shell; then
 fi
 ```
 
-## 0.2. Installation
+# 0.2. Installation
 
 ```bash
 cd /path/to/scspkg
@@ -51,7 +49,7 @@ python3 -m pip install -e .
 echo "module use \`scspkg module dir\`" >> ~/.bashrc
 ```
 
-## 0.3. Setup
+# 0.3. Setup
 
 After installing, you'll have to bootstrap scspkg.
 
@@ -68,7 +66,7 @@ scspkg init False
 If you don't know whether LMOD or Environment Modules is installed, assume 
 Environment Modules. LMOD is compatible with Environment Module scripts.
 
-## 0.4. Using the modulefiles
+# 0.4. Using the modulefiles
 
 ```{bash}
 module avail #List of available modules
@@ -78,7 +76,7 @@ module unload [package] #Unload a module
 module purge #Unload all modules
 ```
 
-## 0.5. Uninstallation
+# 0.5. Uninstallation
 
 ```
 scspkg reset
