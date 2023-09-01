@@ -106,26 +106,30 @@ class ScspkgManager:
         env_vars = ['PATH', 'LD_LIBRARY_PATH', 'LIBRARY_PATH',
                     'INCLUDE', 'CPATH', 'PKG_CONFIG_PATH', 'CMAKE_PREFIX_PATH',
                     'JAVA_HOME']
-        profile = [self._get_env(var) for var in env_vars]
-        profile = [val for val in profile if val is not None]
-        if self._get_env('INCLUDE') is not None:
-            profile.append(self._get_env('INCLUDE'))
-        profile = ';'.join(profile, )
-        print(profile)
+        profile = {}
+        for env_var in env_vars:
+            env_data = self._get_env(env_var)
+            if len(env_data) == 0:
+                profile[env_var] = []
+            else:
+                profile[env_var] = env_data.split(':')
+        return profile
 
-    def _get_env(self, var, prefix=None):
+    def print_profile(self):
+        profile = self.build_profile()
+        prof_list = [f'{env_var}={":".join(env_data)}'
+                     for env_var, env_data in profile.items()]
+        print(';'.join(prof_list))
+
+
+    def _get_env(self, env_var):
         """
         Get an environment variable from the OS.
 
-        :param var: The name of the variable
-        :param prefix: What to rename the variable to. None means don't
-        rename the variable
-        :return: String or None
+        :param env_var: The name of the variable
+        :return: String
         """
-        os_var = os.getenv(var)
+        os_var = os.getenv(env_var)
         if os_var is None:
-            return None
-        if prefix is None:
-            return f'{var}={os_var}'
-        else:
-            return f'{prefix}={os_var}'
+            return ''
+        return os_var

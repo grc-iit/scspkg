@@ -170,12 +170,30 @@ class Package:
         Prepend data to an environment variable
 
         :param env_name: The environment variable to prepend to
-        :param env_data: The data to prepend
+        :param env_data: A list or string of the data to prepend
         :return: self
         """
+        if isinstance(env_data, str):
+            env_data = [env_data]
         if env_name not in self.sections['prepends']:
             self.sections['prepends'][env_name] = []
-        self.sections['prepends'][env_name].append(env_data)
+        self.sections['prepends'][env_name] += env_data
+        return self
+
+    def append_env(self, env_name, env_data):
+        """
+        Append data to an environment variable
+
+        :param env_name: The environment variable to prepend to
+        :param env_data: A list or string of the data to prepend
+        :return: self
+        """
+        if isinstance(env_data, str):
+            env_data = [env_data]
+        if env_name not in self.sections['prepends']:
+            self.sections['prepends'][env_name] = []
+        env_data += self.sections['prepends'][env_name]
+        self.sections['prepends'][env_name] = env_data
         return self
 
     def rm_env(self, env_name):
@@ -207,6 +225,18 @@ class Package:
                 print(f'{env_data} not in {env_name} prepend variable')
         else:
             print(f'{env_name} is not a prepend variable')
+        return self
+
+    def build_profile(self):
+        """
+        Create a snapshot of important currently-loaded environment variables.
+
+        :return: self
+        """
+        profile = self.scspkg.build_profile()
+        self.reset_config()
+        for env_key, env_data in profile.items():
+            self.append_env(env_key, env_data)
         return self
 
     def add_deps(self, deps):

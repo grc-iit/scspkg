@@ -293,8 +293,18 @@ class ScspkgArgs(ArgParse):
 
         # scspkg build profile
         self.add_menu('build profile',
-                      msg='Print useful environment variables'
-                          'in a compatible way with IDEs')
+                      msg='Collect useful environment variables.')
+        self.add_args([
+            {
+                'name': 'PKG_NAME',
+                'msg': 'The name of the package to update. If none, '
+                       'will simply print the environment in a way'
+                       'compatible with the IDE.',
+                'required': False,
+                'default': None,
+                'pos': True
+            }
+        ])
 
     """
     INITIALIZATION CLI
@@ -393,7 +403,10 @@ class ScspkgArgs(ArgParse):
         Package(self.kwargs['PKG_NAME']).reset_config().save()
 
     def build_profile(self):
-        self.scspkg.build_profile()
+        if self.kwargs['PKG_NAME'] is None:
+            self.scspkg.print_profile()
+        else:
+            Package(self.kwargs['PKG_NAME']).build_profile().save()
 
 
 if __name__ == '__main__':
