@@ -1,335 +1,276 @@
 #!/usr/bin/env python3
-import sys,os
-import shutil
-import json
-import re
+import sys
+import os
+from jarvis_util import *
+from scspkg.scspkg_manager import ScspkgManager
+from scspkg.pkg import Package
+from scspkg.pkg_manager import PackageManager
 
-class ArgumentParser:
-    def __init__(self):
-        self._args = {}
-        return
 
-    def help(self, terminate=True):
-        print("Usage:")
-        print("scspkg list")
-        print("scspkg build-profile")
-        print("scspkg create package1 ... packageN")
-        print("scspkg from-spack spack_query new_package_name")
-        print("scspkg rm package1 ... packageN")
-        print("scspkg set-env package env_name env_data")
-        print("scspkg prepend-env package env_name env_data")
-        print("scspkg rm-env package env_name")
-        print("scspkg rm-prepend package env_name env_data")
-        print("scspkg add-deps package dep1 ... depN")
-        print("scspkg rm-deps package dep1 ... depN")
-        print("scspkg ls-deps package dep1 ... depN")
-        print("scspkg pkg-root package1 ... packageN")
-        print("scspkg pkg-src package1 ... packageN")
-        print("scspkg module-path package1 ... packageN")
-        print("scspkg modules-path")
-        print("scspkg schema-path package1 ... packageN")
-        print("scspkg show-schema package1 ... packageN")
-        print("scspkg reset-schema package1 ... packageN")
-        print("scspkg show-module package1 ... packageN")
-        if terminate:
-            exit(1)
+class ScspkgArgs(ArgParse):
+    def define_options(self):
+        self.scspkg = ScspkgManager.get_instance()
+        self.pkg_mngr = PackageManager()
 
-    def run(self):
-        if len(sys.argv) < 2:
-            self.help()
-        self.option = sys.argv[1]
-        self.packages = sys.argv[2:]
-        return self
+        # scspkg init
+        self.add_menu('init',
+                      msg='Initialize SCSPKG installation')
 
-class Package:
-    def __init__(self, package_name):
-        self.name = package_name
-        self.root = os.getenv("SCSPKG_ROOT")
-        self.pkgs = os.path.join(self.root, "packages")
-        self.pkg_root = os.path.join(self.pkgs, package_name)
-        self.pkg_src = os.path.join(self.pkg_root, "src")
-        self.module_path = os.path.join(self.root, "modulefiles", self.name)
-        self.module_schema_path = os.path.join(self.root, "modulefiles_json", self.name)
-        self.build_config()
-        self._load_config()
+        # scspkg reset
+        self.add_menu('reset',
+                      msg='Remove all packages')
 
-    @staticmethod
-    def _build_config(pkg_root, name):
-        sections = {}
-        sections["description"] = {
-            "Name": name,
-            "Version": "None",
-            "Description": "None"
-        }
-        sections["deps"] = {}
-        sections["setenvs"] = {}
-        sections["prepends"] = {
-            "PATH": [os.path.join(pkg_root, "bin"), os.path.join(pkg_root, "sbin")],
-            "LD_LIBRARY_PATH": [os.path.join(pkg_root, "lib"), os.path.join(pkg_root, "lib64")],
-            "LIBRARY_PATH": [os.path.join(pkg_root, "lib"), os.path.join(pkg_root, "lib64")],
-            "INCLUDE": [os.path.join(pkg_root, "include")],
-            "CPATH": [os.path.join(pkg_root, "include")],
-            "CFLAGS": [os.path.join(pkg_root, "include")],
-            "LDFLAGS": [os.path.join(pkg_root, "lib"), os.path.join(pkg_root, "lib64")]
-        }
-        return sections
+        # scspkg create
+        self.add_menu('create',
+                      msg='Create a new package',)
+        self.add_args([
+            {
+                'name': 'PKG_NAME',
+                'msg': 'The name of the package to create',
+                'required': True,
+                'pos': True
+            }
+        ])
 
-    def build_config(self, pkg_root=None):
-        if pkg_root is None:
-            pkg_root = self.pkg_root
-        self.sections = self._build_config(pkg_root, self.name)
+        # scspkg list
+        self.add_menu('list',
+                      msg='List existing packages',
+                      keep_remainder=True)
+        self.add_args([
+            {
+                'name': 'REGEX',
+                'msg': 'The regex to search for',
+                'required': False,
+                'pos': True
+            }
+        ])
 
-    def rebuild_config(self):
-        self.build_config()
-        self.save_config()
+        # scspkg destroy
+        self.add_menu('destroy',
+                      msg='Destroy a set of packages',
+                      keep_remainder=True)
+        self.add_args([
+            {
+                'name': 'PKG_NAME',
+                'msg': 'The name of the package to destroy',
+                'required': True,
+                'pos': True
+            },
+        ])
 
-    def _load_config(self):
-        if os.path.exists(self.module_schema_path):
-            with open(self.module_schema_path, 'r') as fp:
-                self.sections.update(json.load(fp))
+        # scspkg add deps
+        self.add_menu('add deps',
+                      msg='Add modules this package depends on',
+                      keep_remainder=True)
+        self.add_args([
+            {
+                'name': 'PKG_NAME',
+                'msg': 'The name of the package to update',
+                'required': True,
+                'pos': True
+            },
+            {
+                'name': 'DEP_NAME',
+                'msg': 'The name of the dependency to add',
+                'required': True,
+                'pos': True
+            }
+        ])
 
-    def save_config(self):
-        #Save the module schema
-        with open(self.module_schema_path, 'w') as fp:
-            json.dump(self.sections, fp, indent=4)
-        #Save the module file
-        with open(self.module_path, 'w') as fp:
-            #The module header
-            module = "#%Module1.0\n"
-            #The module description
-            for descriptor_key, descriptor_value in self.sections["description"].items():
-                module += "module-whatis \"{}: {}\"\n".format(descriptor_key, descriptor_value)
-            #The module dependencies
-            for dep in self.sections["deps"].keys():
-                module += "module load \"{}\"\n".format(dep)
-            #The module environment variables
-            for env,env_data in self.sections["setenvs"].items():
-                module += "setenv {} \"{}\"\n".format(env, env_data)
-            #The module environment prepends
-            for env,values in self.sections["prepends"].items():
-                if env == 'LDFLAGS':
-                    #ldflags = [f"-L {value}" for value in values]
-                    #for value in ldflags:
-                    #    module += "prepend-path --delim \"  \" {} \"{}\"\n".format(env, value)
-                    pass
-                elif env == 'CFLAGS':
-                    #cflags = [f"-I {value}" for value in values]
-                    #for value in cflags:
-                    #    module += "prepend-path --delim \"  \" {} \"{}\"\n".format(env, value)
-                    pass
-                else:
-                    for value in values:
-                        module += "prepend-path {} \"{}\"\n".format(env, value)
-            fp.write(module)
+        # scspkg list deps
+        self.add_menu('list deps',
+                      msg='List modules this package depends on',
+                      keep_remainder=True)
+        self.add_args([
+            {
+                'name': 'PKG_NAME',
+                'msg': 'The name of the package to update',
+                'required': True,
+                'pos': True
+            }
+        ])
 
-    def remove(self):
-        if os.path.exists(self.pkg_root):
-            shutil.rmtree(self.pkg_root)
-        if os.path.exists(self.module_path):
-            os.remove(self.module_path)
-        if os.path.exists(self.module_schema_path):
-            os.remove(self.module_schema_path)
+        # scspkg rm deps
+        self.add_menu('rm deps',
+                      msg='Remove dependencies from this module',
+                      keep_remainder=True)
+        self.add_args([
+            {
+                'name': 'PKG_NAME',
+                'msg': 'The name of the package to update',
+                'required': True,
+                'pos': True
+            }
+        ])
 
-    def set_env(self, env_name, env_data):
-        self.sections["setenvs"][env_name] = env_data
-        self.save_config()
+        # scspkg env prepend
+        self.add_menu('env prepend',
+                      msg='Prepend a value to a package environment variable',
+                      keep_remainder=True,
+                      remainder_as_kv=True)
+        self.add_args([
+            {
+                'name': 'PKG_NAME',
+                'msg': 'The name of the package to update',
+                'required': True,
+                'pos': True
+            }
+        ])
 
-    def prepend_env(self, env_name, env_data):
-        if env_name not in self.sections["prepends"]:
-            self.sections["prepends"][env_name] = []
-        self.sections["prepends"][env_name].insert(0, env_data)
-        self.save_config()
+        # scspkg env set
+        self.add_menu('env set',
+                      msg='Set the value for a package environment variable',
+                      keep_remainder=True,
+                      remainder_as_kv=True)
+        self.add_args([
+            {
+                'name': 'PKG_NAME',
+                'msg': 'The name of the package to update',
+                'required': True,
+                'pos': True
+            }
+        ])
 
-    def rm_env(self, env_name):
-        del self.sections["setenvs"][env_name]
-        self.save_config()
+        # scspkg pkg root
+        self.add_menu('pkg root',
+                      msg='Get the root directory of the package')
+        self.add_args([
+            {
+                'name': 'PKG_NAME',
+                'msg': 'The name of the package to query',
+                'required': True,
+                'pos': True
+            }
+        ])
 
-    def rm_prepend(self, env_name, env_data):
-        self.sections["prepends"][env_name].remove(env_data)
-        self.save_config()
+        # scspkg pkg src
+        self.add_menu('pkg src',
+                      msg='Get the src directory of the package')
+        self.add_args([
+            {
+                'name': 'PKG_NAME',
+                'msg': 'The name of the package to query',
+                'required': True,
+                'pos': True
+            }
+        ])
 
-    def add_deps(self, deps):
-        for dep in deps:
-            self.sections["deps"][dep] = True
-        self.save_config()
+        # scspkg schema path
+        self.add_menu('schema path',
+                      msg='Get the path to the YAML schema for package')
+        self.add_args([
+            {
+                'name': 'PKG_NAME',
+                'msg': 'The name of the package to query',
+                'required': True,
+                'pos': True
+            }
+        ])
 
-    def rm_deps(self, deps):
-        for dep in deps:
-            if dep in self.sections["deps"]:
-                del self.sections["deps"][dep]
-        self.save_config()
+        # scspkg schema show
+        self.add_menu('schema show',
+                      msg='Print the YAML schema for package')
+        self.add_args([
+            {
+                'name': 'PKG_NAME',
+                'msg': 'The name of the package to query',
+                'required': True,
+                'pos': True
+            }
+        ])
 
-    def ls_deps(self):
-        for dep in self.sections["deps"].keys():
-            print(dep)
+        # scspkg module path
+        self.add_menu('module path',
+                      msg='Get the path to the modulefile for package')
+        self.add_args([
+            {
+                'name': 'PKG_NAME',
+                'msg': 'The name of the package to query',
+                'required': True,
+                'pos': True
+            }
+        ])
 
-    def get_package_root(self):
-        if os.path.exists(self.pkg_root):
-            return self.pkg_root
-        else:
-            print("Error: Package {} does not exist".format(self.name))
-            exit(1)
+        # scspkg module show
+        self.add_menu('module show',
+                      msg='Print the modulefile for package')
+        self.add_args([
+            {
+                'name': 'PKG_NAME',
+                'msg': 'The name of the package to query',
+                'required': True,
+                'pos': True
+            }
+        ])
 
-    def get_package_src(self):
-        if os.path.exists(self.pkg_src):
-            return self.pkg_src
-        else:
-            print("Error: Package {} does not exist".format(self.name))
-            exit(1)
+    """
+    INITIALIZATION CLI
+    """
 
-    def get_module_schema_path(self):
-        if os.path.exists(self.module_schema_path):
-            return self.module_schema_path
-        else:
-            print("Error: Package {} does not exist".format(self.name))
-            exit(1)
+    def init(self):
+        self.scspkg.init()
 
-    def get_module_schema(self):
-        if os.path.exists(self.module_schema_path):
-            return json.dumps(self.sections, indent=4)
-        else:
-            print("Error: Package {} does not exist".format(self.name))
-            exit(1)
+    def reset(self):
+        self.pkg_mngr.reset()
 
-    def get_modulefile(self):
-        try:
-            with open(self.module_path, 'r') as f:
-                return f.read()
-        except:
-            print("Error: Package {} does not exist".format(self.name))
-            exit(1)
-
-class SCSPKG:
-    def __init__(self):
-        self.root = os.getenv("SCSPKG_ROOT")
-        self.pkgs = os.path.join(self.root, "packages")
-
-    def create_packages(self, packages):
-        for package_name in packages:
-            package_path = os.path.join(self.pkgs, package_name)
-            if not os.path.exists(package_path):
-                os.mkdir(package_path)
-                os.mkdir(os.path.join(package_path, 'src'))
-                Package(package_name).save_config()
-            else:
-                print("Error: the package {} already exists".format(package_name))
-
-    def rm_packages(self, packages):
-        for package_name in packages:
-            Package(package_name).remove()
-
-    def ls_deps(self, packages):
-        for package_name in packages:
-            Package(package_name).ls_deps()
-
-    def print_package_roots(self, packages):
-        for package_name in packages:
-            print(Package(package_name).get_package_root())
-
-    def print_package_srcs(self, packages):
-        for package_name in packages:
-            print(Package(package_name).get_package_src())
-
-    def print_module_path(self, packages):
-        for package_name in packages:
-            print(os.path.join(self.root, "modulefiles", package_name))
-
-    def print_modules_path(self):
-        print(os.path.join(self.root, "modulefiles"))
-
-    def print_module_schema_paths(self, packages):
-        for package_name in packages:
-            print(Package(package_name).get_module_schema_path())
-
-    def print_module_schemas(self, packages):
-        for package_name in packages:
-            print(Package(package_name).get_module_schema())
-
-    def print_modules(self, packages):
-        for package_name in packages:
-            print(Package(package_name).get_modulefile())
-
-    def rebuild_module_schemas(self, packages):
-        if packages[0] == '*':
-            for package_name in os.listdir(os.path.join(self.root, "packages")):
-                Package(package_name).rebuild_config()
-        else:
-            for package_name in packages:
-                Package(package_name).rebuild_config()
+    def create(self):
+        self.pkg_mngr.create_pkgs(self.kwargs['PKG_NAME'])
 
     def list(self):
-        for item in os.listdir(os.path.join(self.root, "packages")):
-            print(item)
+        self.pkg_mngr.list(self.kwargs['REGEX'])
+        self.pkg_mngr.list(self.remainder)
 
-    def _get_env(self, var, prefix=None):
-        try:
-            os_var = self._os_env(var)
-            if len(os_var) == 0:
-                return None
-            if prefix is None:
-                return "{}={}".format(var, self._os_env(var))
-            else:
-                return "{}={}".format(prefix, self._os_env(var))
-        except:
-            return None
+    def destroy(self):
+        self.pkg_mngr.destroy_pkgs(self.kwargs['PKG_NAME'])
+        self.pkg_mngr.destroy_pkgs(self.remainder)
 
-    def _os_env(self, name):
-        if name in os.environ:
-            return os.environ[name]
-        return ""
+    def add_deps(self):
+        pkg = Package(self.kwargs['PKG_NAME'])
+        pkg.add_deps(self.kwargs['DEP_NAME'])
+        pkg.add_deps(self.remainder)
+        pkg.save()
 
-    def build_profile(self):
-        vars = ['PATH', 'LD_LIBRARY_PATH', 'LIBRARY_PATH', 'INCLUDE', 'CPATH',
-                'PKG_CONFIG_PATH', 'CMAKE_PREFIX_PATH', 'JAVA_HOME']
-        profile = [self._get_env(var) for var in vars]
-        profile = [val for val in profile if val is not None]
-        if self._get_env('INCLUDE') is not None:
-            profile.append(self._get_env('INCLUDE'))
-        profile = ";".join(profile, )
-        print(profile)
+    def list_deps(self):
+        pkg = Package(self.kwargs['PKG_NAME'])
+        pkg.ls_deps()
 
-if __name__ == "__main__":
-    args = ArgumentParser().run()
-    if args.option == 'create':
-        SCSPKG().create_packages(args.packages)
-    elif args.option == 'rm':
-        SCSPKG().rm_packages(args.packages)
-    elif args.option == 'set-env':
-        Package(args.packages[0]).set_env(args.packages[1], args.packages[2])
-    elif args.option == 'prepend-env':
-        Package(args.packages[0]).prepend_env(args.packages[1], args.packages[2])
-    elif args.option == 'rm-env':
-        Package(args.packages[0]).rm_env(args.packages[1])
-    elif args.option == 'rm-prepend':
-        Package(args.packages[0]).rm_prepend(args.packages[1], args.packages[2])
-    elif args.option == 'add-deps':
-        Package(args.packages[0]).add_deps(args.packages[1:])
-    elif args.option == 'rm-deps':
-        Package(args.packages[0]).rm_deps(args.packages[1:])
-    elif args.option == 'ls-deps':
-        SCSPKG().ls_deps(args.packages)
-    elif args.option == 'pkg-root':
-        SCSPKG().print_package_roots(args.packages)
-    elif args.option == 'pkg-src':
-        SCSPKG().print_package_srcs(args.packages)
-    elif args.option == 'module-path':
-        SCSPKG().print_module_path(args.packages)
-    elif args.option == 'modules-path':
-        SCSPKG().print_modules_path()
-    elif args.option == 'schema-path':
-        SCSPKG().print_module_schema_paths(args.packages)
-    elif args.option == 'show-schema':
-        SCSPKG().print_module_schemas(args.packages)
-    elif args.option == 'reset-schema':
-        SCSPKG().rebuild_module_schemas(args.packages)
-    elif args.option == 'show-module':
-        SCSPKG().print_modules(args.packages)
-    elif args.option == 'list':
-        SCSPKG().list()
-    elif args.option == 'build-profile':
-        SCSPKG().build_profile()
-    elif args.option == 'repo':
-        print(os.getenv("SCSPKG_ROOT"))
-    else:
-        print("Invalid option: {}".format(args.option))
-        args.help()
+    def rm_deps(self):
+        pkg = Package(self.kwargs['PKG_NAME'])
+        pkg.rm_deps(self.kwargs['DEP_NAME'])
+        pkg.rm_deps(self.remainder)
+        pkg.save()
+
+    def env_prepend(self):
+        pkg = Package(self.kwargs['PKG_NAME'])
+        for key, val in self.kwargs.items():
+            pkg.prepend_env(key, val)
+        pkg.save()
+
+    def env_set(self):
+        pkg = Package(self.kwargs['PKG_NAME'])
+        for key, val in self.kwargs.items():
+            pkg.set_env(key, val)
+        pkg.save()
+
+    def pkg_root(self):
+        print(Package(self.kwargs['PKG_NAME']).pkg_root)
+
+    def pkg_src(self):
+        print(Package(self.kwargs['PKG_NAME']).pkg_src)
+
+    def schema_path(self):
+        print(Package(self.kwargs['PKG_NAME']).module_schema_path)
+
+    def schema_show(self):
+        print(Package(self.kwargs['PKG_NAME']).get_module_schema())
+
+    def module_path(self):
+        print(Package(self.kwargs['PKG_NAME']).module_path)
+
+    def module_show(self):
+        print(Package(self.kwargs['PKG_NAME']).get_modulefile())
+
+
+if __name__ == '__main__':
+    args = ScspkgArgs()
+    args.process_args()

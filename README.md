@@ -1,13 +1,14 @@
 # SCSPKG
 
-A simple tool for building modulefiles and testing build scripts before building a spack script.
+A simple tool for building modulefiles and testing build scripts before building 
+a spack script. It's also useful for when spack fails.
 
 ## Dependencies
 
 * Python3
 * tclsh
 * Environment Modules
-* jarvis-cd (we assume this is already installed)
+* jarvis-util
 
 These dependencies are automatically installed using install.sh for debian-based and red-hat based distros.
 
