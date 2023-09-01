@@ -48,6 +48,7 @@ class PackageManager:
             else:
                 print(f'{x} is neither yes or no')
                 continue
+
         for pkg_name in os.listdir(self.scspkg.module_dir):
             Package(pkg_name).destroy()
         return self

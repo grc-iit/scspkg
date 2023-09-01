@@ -189,6 +189,10 @@ class ScspkgArgs(ArgParse):
             }
         ])
 
+        # scspkg modules dir
+        self.add_menu('modules dir',
+                      msg='Get the path to the modulefile directory')
+
         # scspkg module path
         self.add_menu('module path',
                       msg='Get the path to the modulefile for package')
@@ -212,6 +216,11 @@ class ScspkgArgs(ArgParse):
                 'pos': True
             }
         ])
+
+        # scspkg build profile
+        self.add_menu('build profile',
+                      msg='Print useful environment variables'
+                          'in a compatible way with IDEs')
 
     """
     INITIALIZATION CLI
@@ -278,11 +287,17 @@ class ScspkgArgs(ArgParse):
     def schema_show(self):
         print(Package(self.kwargs['PKG_NAME']).get_module_schema())
 
+    def modules_dir(self):
+        print(self.scspkg.module_dir)
+
     def module_path(self):
         print(Package(self.kwargs['PKG_NAME']).module_path)
 
     def module_show(self):
         print(Package(self.kwargs['PKG_NAME']).get_modulefile())
+
+    def build_profile(self):
+        self.scspkg.build_profile()
 
 
 if __name__ == '__main__':

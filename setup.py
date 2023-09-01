@@ -3,6 +3,7 @@ import setuptools
 setuptools.setup(
     name="scspkg",
     packages=setuptools.find_packages(),
+    scripts=['bin/scspkg'],
     version="0.0.1",
     author="Luke Logan",
     author_email="llogan@hawk.iit.edu",

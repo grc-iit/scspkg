@@ -41,6 +41,7 @@ class ScspkgManager:
         self.module_type = ModuleType.TCL
         self.config = {}
         self.config_path = f'{self.config_dir}/scspkg_config.yaml'
+        self.load()
 
     def init(self):
         """
@@ -78,7 +79,7 @@ class ScspkgManager:
         """
         Save the SCSPKG configuration files
         """
-        self.config['MODULE_TYPE'] = self.module_type
+        self.config['MODULE_TYPE'] = self.module_type.name
         YamlFile(self.config_path).save(self.config)
 
     def load(self):
@@ -87,9 +88,12 @@ class ScspkgManager:
 
         :return: self
         """
-        self.env = YamlFile(self.env_path).load()
-        self.config = YamlFile(self.config_path).load()
-        self.module_type = self.config['MODULE_TYPE']
+        if os.path.exists(self.env_path):
+            self.env = YamlFile(self.env_path).load()
+        if os.path.exists(self.config_path):
+            self.config = YamlFile(self.config_path).load()
+        if 'MODULE_TYPE' in self.config:
+            self.module_type = ModuleType[self.config['MODULE_TYPE']]
         return self
 
     def build_profile(self):
