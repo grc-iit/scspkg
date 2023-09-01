@@ -46,7 +46,8 @@ fi
 cd /path/to/scspkg
 python3 -m pip install -r requirements.txt
 python3 -m pip install -e .
-echo "module use \`scspkg module dir\`" >> ~/.bashrc
+SCSPKG_MODULE_DIR=`scspkg module dir`
+echo "module use ${SCSPKG_MODULE_DIR}" >> ~/.bashrc
 ```
 
 # 0.3. Setup
