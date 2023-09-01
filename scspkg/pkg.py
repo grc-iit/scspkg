@@ -24,6 +24,7 @@ class Package:
                                                f'{self.name}.yaml')
         self.sections = {}
         self.reset_config()
+        self.load()
 
     def reset_config(self):
         """
@@ -74,6 +75,14 @@ class Package:
         #     self._save_as_lmod()
         return self
 
+    def load(self):
+        """
+        Load the YAML config from the package root
+        """
+        if os.path.exists(self.module_schema_path):
+            self.sections = YamlFile(self.module_schema_path).load()
+        return self
+
     def _save_as_tcl(self):
         """
         Save the TCL representation of the YAML schema
@@ -88,7 +97,7 @@ class Package:
             module.append(f'module-whatis \'{doc_key}: {doc_val}\'')
         # The module dependencies
         for dep in self.sections['deps'].keys():
-            module.append(f'module load \'{dep}\'')
+            module.append(f'module load {dep}')
         # The module environment variables
         for env, env_data in self.sections['setenvs'].items():
             module.append(f'setenv {env} \'{env_data}\'')
@@ -109,7 +118,7 @@ class Package:
         """
         module = []
         # The module header
-        # module.append('-- Module1.0')
+        module.append('-- Module1.0')
         # The module doc
         module.append(f'help([[')
         for doc_key, doc_val in self.sections['doc'].items():
@@ -163,7 +172,7 @@ class Package:
         """
         if env_name not in self.sections['prepends']:
             self.sections['prepends'][env_name] = []
-        self.sections['prepends'][env_name].insert(0, env_data)
+        self.sections['prepends'][env_name].append(env_data)
         return self
 
     def rm_env(self, env_name):
@@ -179,7 +188,7 @@ class Package:
             del self.sections['prepends'][env_name]
         return self
 
-    def rm_prepend(self, env_name, env_data):
+    def pop_prepend(self, env_name, env_data):
         """
         Remove one of the prepend paths from this module
 
@@ -187,7 +196,14 @@ class Package:
         :param env_data: The entry to remove
         :return: self
         """
-        self.sections['prepends'][env_name].remove(env_data)
+        if env_name in self.sections['prepends']:
+            prepends = self.sections['prepends'][env_name]
+            if env_data in prepends:
+                prepends.remove(env_data)
+            else:
+                print(f'{env_data} not in {env_name} prepend variable')
+        else:
+            print(f'{env_name} is not a prepend variable')
         return self
 
     def add_deps(self, deps):
@@ -197,11 +213,13 @@ class Package:
         :param deps: A list or string of exact module names
         :return: self
         """
+        if isinstance(deps, str):
+            deps = [deps]
         for dep in deps:
             self.sections['deps'][dep] = True
         return self
 
-    def rm_deps(self, deps):
+    def pop_deps(self, deps):
         """
         Remove dependencies in the module
 

@@ -68,8 +68,8 @@ class ScspkgArgs(ArgParse):
             },
         ])
 
-        # scspkg add deps
-        self.add_menu('add deps',
+        # scspkg dep add
+        self.add_menu('dep add',
                       msg='Add modules this package depends on',
                       keep_remainder=True)
         self.add_args([
@@ -87,8 +87,8 @@ class ScspkgArgs(ArgParse):
             }
         ])
 
-        # scspkg list deps
-        self.add_menu('list deps',
+        # scspkg dep list
+        self.add_menu('dep list',
                       msg='List modules this package depends on',
                       keep_remainder=True)
         self.add_args([
@@ -100,13 +100,19 @@ class ScspkgArgs(ArgParse):
             }
         ])
 
-        # scspkg rm deps
-        self.add_menu('rm deps',
+        # scspkg dep pop
+        self.add_menu('dep pop',
                       msg='Remove dependencies from this module',
                       keep_remainder=True)
         self.add_args([
             {
                 'name': 'PKG_NAME',
+                'msg': 'The name of the package to update',
+                'required': True,
+                'pos': True
+            },
+            {
+                'name': 'DEP_NAME',
                 'msg': 'The name of the package to update',
                 'required': True,
                 'pos': True
@@ -116,12 +122,23 @@ class ScspkgArgs(ArgParse):
         # scspkg env prepend
         self.add_menu('env prepend',
                       msg='Prepend a value to a package environment variable',
-                      keep_remainder=True,
-                      remainder_as_kv=True)
+                      keep_remainder=True)
         self.add_args([
             {
                 'name': 'PKG_NAME',
                 'msg': 'The name of the package to update',
+                'required': True,
+                'pos': True
+            },
+            {
+                'name': 'ENV_NAME',
+                'msg': 'The environment variable to update',
+                'required': True,
+                'pos': True
+            },
+            {
+                'name': 'PREPEND_VAL',
+                'msg': 'Prepend value',
                 'required': True,
                 'pos': True
             }
@@ -132,6 +149,38 @@ class ScspkgArgs(ArgParse):
                       msg='Set the value for a package environment variable',
                       keep_remainder=True,
                       remainder_as_kv=True)
+        self.add_args([
+            {
+                'name': 'PKG_NAME',
+                'msg': 'The name of the package to update',
+                'required': True,
+                'pos': True
+            }
+        ])
+
+        # scspkg env pop
+        self.add_menu('env pop',
+                      msg='Pop a value from package environment variable',
+                      keep_remainder=True)
+        self.add_args([
+            {
+                'name': 'PKG_NAME',
+                'msg': 'The name of the package to update',
+                'required': True,
+                'pos': True
+            },
+            {
+                'name': 'ENV_NAME',
+                'msg': 'The name of the variable to pop from',
+                'required': True,
+                'pos': True
+            }
+        ])
+
+        # scspkg env unset
+        self.add_menu('env unset',
+                      msg='Unset the value for a package environment variable',
+                      keep_remainder=True)
         self.add_args([
             {
                 'name': 'PKG_NAME',
@@ -217,6 +266,19 @@ class ScspkgArgs(ArgParse):
             }
         ])
 
+        # scspkg module rebuild
+        self.add_menu('module rebuild',
+                      msg='Rebuild module for package without '
+                          'deleting original schema')
+        self.add_args([
+            {
+                'name': 'PKG_NAME',
+                'msg': 'The name of the package to query',
+                'required': True,
+                'pos': True
+            }
+        ])
+
         # scspkg build profile
         self.add_menu('build profile',
                       msg='Print useful environment variables'
@@ -247,32 +309,48 @@ class ScspkgArgs(ArgParse):
         self.pkg_mngr.destroy_pkgs(self.kwargs['PKG_NAME'])
         self.pkg_mngr.destroy_pkgs(self.remainder)
 
-    def add_deps(self):
+    def dep_add(self):
         pkg = Package(self.kwargs['PKG_NAME'])
         pkg.add_deps(self.kwargs['DEP_NAME'])
         pkg.add_deps(self.remainder)
         pkg.save()
 
-    def list_deps(self):
+    def dep_list(self):
         pkg = Package(self.kwargs['PKG_NAME'])
         pkg.ls_deps()
 
-    def rm_deps(self):
+    def dep_pop(self):
         pkg = Package(self.kwargs['PKG_NAME'])
-        pkg.rm_deps(self.kwargs['DEP_NAME'])
-        pkg.rm_deps(self.remainder)
+        pkg.pop_deps(self.kwargs['DEP_NAME'])
+        pkg.pop_deps(self.remainder)
         pkg.save()
 
     def env_prepend(self):
         pkg = Package(self.kwargs['PKG_NAME'])
-        for key, val in self.kwargs.items():
+        key = self.kwargs['ENV_NAME']
+        val = self.kwargs['PREPEND_VAL']
+        pkg.prepend_env(key, val)
+        for val in self.remainder:
             pkg.prepend_env(key, val)
         pkg.save()
 
     def env_set(self):
         pkg = Package(self.kwargs['PKG_NAME'])
-        for key, val in self.kwargs.items():
+        for key, val in self.remainder_kv.items():
             pkg.set_env(key, val)
+        pkg.save()
+
+    def env_pop(self):
+        pkg = Package(self.kwargs['PKG_NAME'])
+        key = self.kwargs['ENV_NAME']
+        for val in self.remainder:
+            pkg.pop_prepend(key, val)
+        pkg.save()
+
+    def env_unset(self):
+        pkg = Package(self.kwargs['PKG_NAME'])
+        for key in self.remainder:
+            pkg.rm_env(key)
         pkg.save()
 
     def pkg_root(self):
@@ -295,6 +373,9 @@ class ScspkgArgs(ArgParse):
 
     def module_show(self):
         print(Package(self.kwargs['PKG_NAME']).get_modulefile())
+
+    def module_rebuild(self):
+        Package(self.kwargs['PKG_NAME']).save()
 
     def build_profile(self):
         self.scspkg.build_profile()
