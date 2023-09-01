@@ -279,6 +279,18 @@ class ScspkgArgs(ArgParse):
             }
         ])
 
+        # scspkg module reset
+        self.add_menu('module reset',
+                      msg='Reset module for package')
+        self.add_args([
+            {
+                'name': 'PKG_NAME',
+                'msg': 'The name of the package to query',
+                'required': True,
+                'pos': True
+            }
+        ])
+
         # scspkg build profile
         self.add_menu('build profile',
                       msg='Print useful environment variables'
@@ -376,6 +388,9 @@ class ScspkgArgs(ArgParse):
 
     def module_rebuild(self):
         Package(self.kwargs['PKG_NAME']).save()
+
+    def module_reset(self):
+        Package(self.kwargs['PKG_NAME']).reset_config().save()
 
     def build_profile(self):
         self.scspkg.build_profile()
