@@ -2,6 +2,7 @@ packages
 modulefiles
 modulefiles_json
 notes
+config
 
 /.idea/*
 *.pyc

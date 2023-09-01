@@ -51,6 +51,7 @@ class ScspkgManager:
         os.makedirs(self.module_dir, exist_ok=True)
         os.makedirs(self.config_dir, exist_ok=True)
         self.build_env()
+        self.save()
         return self
 
     def build_env(self):

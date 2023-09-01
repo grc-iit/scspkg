@@ -2,7 +2,7 @@
 import sys
 import os
 from jarvis_util import *
-from scspkg.scspkg_manager import ScspkgManager
+from scspkg.scspkg_manager import ScspkgManager, ModuleType
 from scspkg.pkg import Package
 from scspkg.pkg_manager import PackageManager
 
@@ -15,6 +15,16 @@ class ScspkgArgs(ArgParse):
         # scspkg init
         self.add_menu('init',
                       msg='Initialize SCSPKG installation')
+        self.add_args([
+            {
+                'name': 'USE_LMOD',
+                'msg': 'Whether to use LMOD or not for modulefiles',
+                'type': bool,
+                'required': False,
+                'default': True,
+                'pos': True
+            }
+        ])
 
         # scspkg reset
         self.add_menu('reset',
@@ -208,6 +218,10 @@ class ScspkgArgs(ArgParse):
     """
 
     def init(self):
+        if self.kwargs['USE_LMOD']:
+            self.scspkg.module_type = ModuleType.LMOD
+        else:
+            self.scspkg.module_type = ModuleType.TCL
         self.scspkg.init()
 
     def reset(self):
