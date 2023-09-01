@@ -1,3 +1,7 @@
+"""
+This module is responsible for creating, removing, and indexing packages.
+"""
+
 from scspkg.scspkg_manager import ScspkgManager
 from scspkg.pkg import Package
 import os
@@ -5,6 +9,10 @@ import re
 
 
 class PackageManager:
+    """
+    This package is responsible for creating, removing, and indexing packages.
+    """
+
     def __init__(self):
         self.scspkg = ScspkgManager.get_instance()
 

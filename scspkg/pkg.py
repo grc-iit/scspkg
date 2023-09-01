@@ -1,10 +1,19 @@
+"""
+This module is responsbile for building modulefiles in a structured way.
+"""
 from scspkg.scspkg_manager import ScspkgManager, ModuleType
 import os
 import json
+# pylint: disable=W0401,W0614
 from jarvis_util import *
+# pylint: enable=W0401,W0614
 
 
 class Package:
+    """
+    Package represents a modulefile and the source code for a pacakge.
+    """
+
     def __init__(self, package_name):
         self.scspkg = ScspkgManager.get_instance()
         self.name = package_name
@@ -58,10 +67,11 @@ class Package:
         Save the YAML + modulefiles to the directories.
         """
         YamlFile(self.module_schema_path).save(self.sections)
-        if self.scspkg.module_type == ModuleType.TCL:
-            self._save_as_tcl()
-        else:
-            self._save_as_lmod()
+        self._save_as_tcl()
+        # if self.scspkg.module_type == ModuleType.TCL:
+        #     self._save_as_tcl()
+        # else:
+        #     self._save_as_lmod()
         return self
 
     def _save_as_tcl(self):
@@ -87,7 +97,7 @@ class Package:
             for value in values:
                 module.append(f'prepend-path {env} \'{value}\'')
         # Write the lines
-        with open(self.module_path, 'w') as fp:
+        with open(self.module_path, 'w', encoding='utf-8') as fp:
             module = '\n'.join(module)
             fp.write(module)
 
@@ -99,10 +109,12 @@ class Package:
         """
         module = []
         # The module header
-        module.append('-- Module1.0')
+        # module.append('-- Module1.0')
         # The module doc
+        module.append(f'help([[')
         for doc_key, doc_val in self.sections['doc'].items():
-            module.append(f'help(\"{doc_key}: {doc_val}\")')
+            module.append(f'  {doc_key}: {doc_val}')
+        module.append(']])')
         # The module dependencies
         for dep in self.sections['deps'].keys():
             module.append(f'depends_on(\"{dep}\")')
@@ -114,7 +126,7 @@ class Package:
             for value in values:
                 module.append(f'prepend_path(\"{env}\", \"{value}\")')
         # Write the lines
-        with open(self.module_path, 'w') as fp:
+        with open(self.module_path, 'w', encoding='utf-8') as fp:
             module = '\n'.join(module)
             fp.write(module)
 
@@ -218,8 +230,8 @@ class Package:
         if os.path.exists(self.module_schema_path):
             return json.dumps(self.sections, indent=4)
         else:
-            print('Error: Package {} does not exist'.format(self.name))
-            exit(1)
+            print(f'Error: Package {self.name} does not exist')
+            sys.exit(1)
 
     def get_modulefile(self):
         """
@@ -227,9 +239,9 @@ class Package:
 
         :return: String
         """
-        try:
-            with open(self.module_path, 'r') as f:
+        if os.path.exists(self.module_path):
+            with open(self.module_path, 'r', encoding='utf-8') as f:
                 return f.read()
-        except:
-            print('Error: Package {} does not exist'.format(self.name))
-            exit(1)
+        else:
+            print(f'Error: Package {self.name} does not exist')
+            sys.exit(1)

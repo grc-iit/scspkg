@@ -5,10 +5,11 @@ of scspkg.
 """
 import pathlib
 import inspect
-from jarvis_util import *
 import os
 from enum import Enum
-
+# pylint: disable=W0401,W0614
+from jarvis_util import *
+# pylint: enable=W0401,W0614
 
 class ModuleType(Enum):
     TCL = 'tcl'
@@ -102,13 +103,14 @@ class ScspkgManager:
 
         :return: None
         """
-        vars = ['PATH', 'LD_LIBRARY_PATH', 'LIBRARY_PATH', 'INCLUDE', 'CPATH',
-                'PKG_CONFIG_PATH', 'CMAKE_PREFIX_PATH', 'JAVA_HOME']
-        profile = [self._get_env(var) for var in vars]
+        env_vars = ['PATH', 'LD_LIBRARY_PATH', 'LIBRARY_PATH',
+                    'INCLUDE', 'CPATH', 'PKG_CONFIG_PATH', 'CMAKE_PREFIX_PATH',
+                    'JAVA_HOME']
+        profile = [self._get_env(var) for var in env_vars]
         profile = [val for val in profile if val is not None]
         if self._get_env('INCLUDE') is not None:
             profile.append(self._get_env('INCLUDE'))
-        profile = ";".join(profile, )
+        profile = ';'.join(profile, )
         print(profile)
 
     def _get_env(self, var, prefix=None):
