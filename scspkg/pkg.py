@@ -29,6 +29,8 @@ class Package:
     def reset_config(self):
         """
         Create the skeleton configuration.
+
+        :return: self
         """
         self.sections = {}
         self.sections['doc'] = {
@@ -51,6 +53,7 @@ class Package:
             'LDFLAGS': [os.path.join(self.pkg_root, 'lib'),
                         os.path.join(self.pkg_root, 'lib64')]
         }
+        return self
 
     def create(self):
         """
