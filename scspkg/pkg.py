@@ -105,11 +105,11 @@ class Package:
             module.append(f'module load {dep}')
         # The module environment variables
         for env, env_data in self.sections['setenvs'].items():
-            module.append(f'setenv {env} \'{env_data}\'')
+            module.append(f'setenv {env} {env_data}')
         # The module environment prepends
         for env, values in self.sections['prepends'].items():
-            for value in values:
-                module.append(f'prepend-path {env} \'{value}\'')
+            for env_data in values:
+                module.append(f'prepend-path {env} {env_data}')
         # Write the lines
         with open(self.module_path, 'w', encoding='utf-8') as fp:
             module = '\n'.join(module)
