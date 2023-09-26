@@ -42,6 +42,7 @@ class ScspkgManager:
         self.module_type = ModuleType.TCL
         self.config = {}
         self.config_path = f'{self.config_dir}/scspkg_config.yaml'
+        self.init()
         self.load()
 
     def init(self):
@@ -49,6 +50,8 @@ class ScspkgManager:
         Create the configuration directories. Ensure that modules
         are scanned from the module_dir automatically
         """
+        if os.path.exists(self.module_dir):
+            return
         os.makedirs(self.pkg_dir, exist_ok=True)
         os.makedirs(self.module_dir, exist_ok=True)
         os.makedirs(self.config_dir, exist_ok=True)
