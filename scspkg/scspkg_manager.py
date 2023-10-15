@@ -108,7 +108,7 @@ class ScspkgManager:
         """
         env_vars = ['PATH', 'LD_LIBRARY_PATH', 'LIBRARY_PATH',
                     'INCLUDE', 'CPATH', 'PKG_CONFIG_PATH', 'CMAKE_PREFIX_PATH',
-                    'JAVA_HOME']
+                    'JAVA_HOME', 'PYTHONPATH']
         profile = {}
         for env_var in env_vars:
             env_data = self._get_env(env_var)
