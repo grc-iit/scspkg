@@ -50,6 +50,14 @@ SCSPKG_MODULE_DIR=`scspkg module dir`
 echo "module use ${SCSPKG_MODULE_DIR}" >> ~/.bashrc
 ```
 
+IMPORTANT NOTE: Sometimes adding "module use" to bashrc doesn't work.
+The module program may not be quite loaded during bashrc. If you find
+your custom modules don't work, do the following:
+
+```bash
+module use `scspkg module dir` 
+```
+
 # 0.3. Setup
 
 After installing, you'll have to bootstrap scspkg.
