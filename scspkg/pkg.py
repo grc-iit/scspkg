@@ -49,6 +49,7 @@ class Package:
                              os.path.join(self.pkg_root, 'lib64')],
             'INCLUDE': [os.path.join(self.pkg_root, 'include')],
             'CPATH': [os.path.join(self.pkg_root, 'include')],
+            'CMAKE_PREFIX_PATH': [os.path.join(self.pkg_root, 'cmake')],
             'CFLAGS': [],
             'LDFLAGS': []
         }
