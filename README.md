@@ -4,22 +4,17 @@ More detailed doucmentation for its usage is [here](https://github.com/scs-lab/s
 
 # 0.1. Dependencies
 
-## 0.1.1. Jarvis-Util
-SCSPKG depends on [jarvis-util](https://github.com/scs-lab/jarvis-util).
-It's a library which contains wrappers around shell commands.
+1. [jarvis-util](https://github.com/grc-iit/jarvis-util): a library which contains various utilities to aid with creating shell scripts within Python.
+2. LMOD or environment modules
 
-```bash
-git clone https://github.com/scs-lab/jarvis-util.git
-cd jarvis-util
-python3 -m pip install -r requirements.txt
-python3 -m pip install -e .
-```
+## 0.1.2. Install LMOD or Environment Modules
 
-## 0.1.2. LMOD or Environment Modules
+If your machine does not have module support, then install
+[LMOD](https://lmod.readthedocs.io/en/latest/030_installing.html). 
+LMOD is recommended as it has a few more features, although environment
+modules is compatible with SCSPKG as well. 
 
-To install LMOD, follow this [guide](https://lmod.readthedocs.io/en/latest/030_installing.html).
-LMOD is recommended -- only use environment modules if that's what your system
-comes with. We'll repeat the steps used for installing on Ubuntu + bash here.
+We'll repeat the steps used for installing on Ubuntu + bash here.
 LMOD is installed differently for different distros and different shell types.
 
 ```

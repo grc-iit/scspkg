@@ -20,5 +20,8 @@ setuptools.setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Topic :: Application Configuration",
     ],
-    long_description=""
+    long_description="",
+    install_requires=[
+        'jarvis-util @ git+https://github.com/scs-lab/jarvis-util.git#egg=jarvis-util'
+    ]
 )
