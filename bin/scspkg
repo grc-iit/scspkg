@@ -13,8 +13,8 @@ class ScspkgArgs(ArgParse):
         self.pkg_mngr = PackageManager()
 
         # scspkg init
-        self.add_menu('init',
-                      msg='Initialize SCSPKG installation')
+        self.add_cmd('init',
+                     msg='Initialize SCSPKG installation')
         self.add_args([
             {
                 'name': 'USE_LMOD',
@@ -27,12 +27,12 @@ class ScspkgArgs(ArgParse):
         ])
 
         # scspkg reset
-        self.add_menu('reset',
-                      msg='Remove all packages')
+        self.add_cmd('reset',
+                     msg='Remove all packages')
 
         # scspkg create
-        self.add_menu('create',
-                      msg='Create a new package',)
+        self.add_cmd('create',
+                     msg='Create a new package',)
         self.add_args([
             {
                 'name': 'PKG_NAME',
@@ -43,9 +43,9 @@ class ScspkgArgs(ArgParse):
         ])
 
         # scspkg list
-        self.add_menu('list',
-                      msg='List existing packages',
-                      keep_remainder=True)
+        self.add_cmd('list',
+                     msg='List existing packages',
+                     keep_remainder=True)
         self.add_args([
             {
                 'name': 'REGEX',
@@ -56,9 +56,9 @@ class ScspkgArgs(ArgParse):
         ])
 
         # scspkg destroy
-        self.add_menu('destroy',
-                      msg='Destroy a set of packages',
-                      keep_remainder=True)
+        self.add_cmd('destroy',
+                     msg='Destroy a set of packages',
+                     keep_remainder=True)
         self.add_args([
             {
                 'name': 'PKG_NAME',
@@ -68,10 +68,15 @@ class ScspkgArgs(ArgParse):
             },
         ])
 
-        # scspkg dep add
-        self.add_menu('dep add',
-                      msg='Add modules this package depends on',
+        # scspkg dep
+        self.add_menu('dep',
+                      msg='Modify modulefiles this package depends on',
                       keep_remainder=True)
+
+        # scspkg dep add
+        self.add_cmd('dep add',
+                     msg='Add modules this package depends on',
+                     keep_remainder=True)
         self.add_args([
             {
                 'name': 'PKG_NAME',
@@ -88,9 +93,9 @@ class ScspkgArgs(ArgParse):
         ])
 
         # scspkg dep list
-        self.add_menu('dep list',
-                      msg='List modules this package depends on',
-                      keep_remainder=True)
+        self.add_cmd('dep list',
+                     msg='List modules this package depends on',
+                     keep_remainder=True)
         self.add_args([
             {
                 'name': 'PKG_NAME',
@@ -101,9 +106,9 @@ class ScspkgArgs(ArgParse):
         ])
 
         # scspkg dep pop
-        self.add_menu('dep pop',
-                      msg='Remove dependencies from this module',
-                      keep_remainder=True)
+        self.add_cmd('dep pop',
+                     msg='Remove dependencies from this module',
+                     keep_remainder=True)
         self.add_args([
             {
                 'name': 'PKG_NAME',
@@ -119,10 +124,15 @@ class ScspkgArgs(ArgParse):
             }
         ])
 
-        # scspkg env prepend
-        self.add_menu('env prepend',
-                      msg='Prepend a value to a package environment variable',
+        # scspkg env
+        self.add_menu('env',
+                      msg='Modify environment variables',
                       keep_remainder=True)
+
+        # scspkg env prepend
+        self.add_cmd('env prepend',
+                     msg='Prepend a value to a package environment variable',
+                     keep_remainder=True)
         self.add_args([
             {
                 'name': 'PKG_NAME',
@@ -145,10 +155,10 @@ class ScspkgArgs(ArgParse):
         ])
 
         # scspkg env set
-        self.add_menu('env set',
-                      msg='Set the value for a package environment variable',
-                      keep_remainder=True,
-                      remainder_as_kv=True)
+        self.add_cmd('env set',
+                     msg='Set the value for a package environment variable',
+                     keep_remainder=True,
+                     remainder_as_kv=True)
         self.add_args([
             {
                 'name': 'PKG_NAME',
@@ -159,9 +169,9 @@ class ScspkgArgs(ArgParse):
         ])
 
         # scspkg env pop
-        self.add_menu('env pop',
-                      msg='Pop a value from package environment variable',
-                      keep_remainder=True)
+        self.add_cmd('env pop',
+                     msg='Pop a value from package environment variable',
+                     keep_remainder=True)
         self.add_args([
             {
                 'name': 'PKG_NAME',
@@ -178,9 +188,9 @@ class ScspkgArgs(ArgParse):
         ])
 
         # scspkg env unset
-        self.add_menu('env unset',
-                      msg='Unset the value for a package environment variable',
-                      keep_remainder=True)
+        self.add_cmd('env unset',
+                     msg='Unset the value for a package environment variable',
+                     keep_remainder=True)
         self.add_args([
             {
                 'name': 'PKG_NAME',
@@ -190,9 +200,13 @@ class ScspkgArgs(ArgParse):
             }
         ])
 
+        # scspkg pkg
+        self.add_menu('pkg',
+                      msg='Get various paths for a package')
+
         # scspkg pkg root
-        self.add_menu('pkg root',
-                      msg='Get the root directory of the package')
+        self.add_cmd('pkg root',
+                     msg='Get the root directory of the package')
         self.add_args([
             {
                 'name': 'PKG_NAME',
@@ -203,8 +217,8 @@ class ScspkgArgs(ArgParse):
         ])
 
         # scspkg pkg src
-        self.add_menu('pkg src',
-                      msg='Get the src directory of the package')
+        self.add_cmd('pkg src',
+                     msg='Get the src directory of the package')
         self.add_args([
             {
                 'name': 'PKG_NAME',
@@ -214,9 +228,13 @@ class ScspkgArgs(ArgParse):
             }
         ])
 
+        # scspkg schema
+        self.add_menu('schema',
+                      msg='Query and modify the SCSPKG package schema YAML')
+
         # scspkg schema path
-        self.add_menu('schema path',
-                      msg='Get the path to the YAML schema for package')
+        self.add_cmd('schema path',
+                     msg='Get the path to the YAML schema for package')
         self.add_args([
             {
                 'name': 'PKG_NAME',
@@ -227,8 +245,8 @@ class ScspkgArgs(ArgParse):
         ])
 
         # scspkg schema show
-        self.add_menu('schema show',
-                      msg='Print the YAML schema for package')
+        self.add_cmd('schema show',
+                     msg='Print the YAML schema for package')
         self.add_args([
             {
                 'name': 'PKG_NAME',
@@ -238,13 +256,17 @@ class ScspkgArgs(ArgParse):
             }
         ])
 
+        # scspkg module
+        self.add_menu('module',
+                      msg='Query and modify the SCSPKG modulefile')
+
         # scspkg module dir
-        self.add_menu('module dir',
-                      msg='Get the path to the modulefile directory')
+        self.add_cmd('module dir',
+                     msg='Get the path to the modulefile directory')
 
         # scspkg module path
-        self.add_menu('module path',
-                      msg='Get the path to the modulefile for package')
+        self.add_cmd('module path',
+                     msg='Get the path to the modulefile for package')
         self.add_args([
             {
                 'name': 'PKG_NAME',
@@ -255,8 +277,8 @@ class ScspkgArgs(ArgParse):
         ])
 
         # scspkg module show
-        self.add_menu('module show',
-                      msg='Print the modulefile for package')
+        self.add_cmd('module show',
+                     msg='Print the modulefile for package')
         self.add_args([
             {
                 'name': 'PKG_NAME',
@@ -267,9 +289,9 @@ class ScspkgArgs(ArgParse):
         ])
 
         # scspkg module rebuild
-        self.add_menu('module rebuild',
-                      msg='Rebuild module for package without '
-                          'deleting original schema')
+        self.add_cmd('module rebuild',
+                     msg='Rebuild module for package without '
+                         'deleting original schema')
         self.add_args([
             {
                 'name': 'PKG_NAME',
@@ -280,8 +302,8 @@ class ScspkgArgs(ArgParse):
         ])
 
         # scspkg module reset
-        self.add_menu('module reset',
-                      msg='Reset module for package')
+        self.add_cmd('module reset',
+                     msg='Reset module for package')
         self.add_args([
             {
                 'name': 'PKG_NAME',
@@ -292,8 +314,8 @@ class ScspkgArgs(ArgParse):
         ])
 
         # scspkg build profile
-        self.add_menu('build profile',
-                      msg='Collect useful environment variables.')
+        self.add_cmd('build profile',
+                     msg='Collect useful environment variables.')
         self.add_args([
             {
                 'name': 'PKG_NAME',
