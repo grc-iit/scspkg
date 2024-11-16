@@ -100,7 +100,7 @@ class ScspkgManager:
             self.module_type = ModuleType[self.config['MODULE_TYPE']]
         return self
 
-    def build_profile(self):
+    def build_profile(self, strip=None):
         """
         Create a snapshot of important currently-loaded environment variables.
 
@@ -116,10 +116,16 @@ class ScspkgManager:
                 profile[env_var] = []
             else:
                 profile[env_var] = env_data.split(':')
+        if strip is not None:
+            new_env = {}
+            for key, val in profile.items():
+                new_env[key] = [entry for entry in val
+                                if strip not in entry]
+            profile = new_env
         return profile
 
-    def print_profile(self):
-        profile = self.build_profile()
+    def print_profile(self, strip=None):
+        profile = self.build_profile(strip)
         prof_list = [f'{env_var}={":".join(env_data)}'
                      for env_var, env_data in profile.items()]
         print(';'.join(prof_list))

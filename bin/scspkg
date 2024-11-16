@@ -325,6 +325,14 @@ class ScspkgArgs(ArgParse):
                 'required': False,
                 'default': None,
                 'pos': True
+            },
+            {
+                'name': 'STRIP',
+                'msg': 'Remove packages from the profile.',
+                'required': False,
+                'default': None,
+                'pos': False,
+                'type': str
             }
         ])
 
@@ -426,7 +434,7 @@ class ScspkgArgs(ArgParse):
 
     def build_profile(self):
         if self.kwargs['PKG_NAME'] is None:
-            self.scspkg.print_profile()
+            self.scspkg.print_profile(self.kwargs['STRIP'])
         else:
             Package(self.kwargs['PKG_NAME']).build_profile().save()
 
