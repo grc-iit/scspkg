@@ -327,12 +327,22 @@ class ScspkgArgs(ArgParse):
                 'pos': True
             },
             {
-                'name': 'STRIP',
-                'msg': 'Remove packages from the profile.',
+                'name': 'path',
+                'msg': 'Save profile to the path.',
                 'required': False,
                 'default': None,
                 'pos': False,
-                'type': str
+                'type': str,
+                'aliases': ['p']
+            },
+            {
+                'name': 'method',
+                'msg': 'The type of profile to create.',
+                'required': False,
+                'default': 'dotenv',
+                'pos': False,
+                'type': str,
+                'aliases': ['m']
             }
         ])
 
@@ -434,9 +444,9 @@ class ScspkgArgs(ArgParse):
 
     def build_profile(self):
         if self.kwargs['PKG_NAME'] is None:
-            self.scspkg.print_profile(self.kwargs['STRIP'])
+            self.scspkg.build_profile(self.kwargs['path'], self.kwargs['method'])
         else:
-            Package(self.kwargs['PKG_NAME']).build_profile().save()
+            Package(self.kwargs['PKG_NAME']).build_profile(rebuild=True).save()
 
 
 if __name__ == '__main__':

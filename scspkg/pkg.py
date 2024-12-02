@@ -233,16 +233,17 @@ class Package:
             print(f'{env_name} is not a prepend variable')
         return self
 
-    def build_profile(self, strip_names=None):
+    def build_profile(self, path=None, rebuild=False):
         """
         Create a snapshot of important currently-loaded environment variables.
 
         :return: self
         """
-        profile = self.scspkg.build_profile(strip_names)
-        self.reset_config()
-        for env_key, env_data in profile.items():
-            self.append_env(env_key, env_data)
+        profile = self.scspkg.build_profile(path)
+        if rebuild:
+            self.reset_config()
+            for env_key, env_data in profile.items():
+                self.append_env(env_key, env_data)
         return self
 
     def add_deps(self, deps):

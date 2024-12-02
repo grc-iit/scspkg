@@ -100,7 +100,7 @@ class ScspkgManager:
             self.module_type = ModuleType[self.config['MODULE_TYPE']]
         return self
 
-    def build_profile(self, strip=None):
+    def build_profile(self, path=None, method=None):
         """
         Create a snapshot of important currently-loaded environment variables.
 
@@ -116,20 +116,29 @@ class ScspkgManager:
                 profile[env_var] = []
             else:
                 profile[env_var] = env_data.split(':')
-        if strip is not None:
-            new_env = {}
-            for key, val in profile.items():
-                new_env[key] = [entry for entry in val
-                                if strip not in entry]
-            profile = new_env
+        self.env_profile(profile, path, method)
         return profile
 
-    def print_profile(self, strip=None):
-        profile = self.build_profile(strip)
-        prof_list = [f'{env_var}={":".join(env_data)}'
-                     for env_var, env_data in profile.items()]
-        print(';'.join(prof_list))
-
+    def env_profile(self, profile, path=None, method='dotenv'):
+        # None-path profiles
+        if method == 'clion':
+                prof_list = [f'{env_var}={":".join(env_data)}'
+                            for env_var, env_data in profile.items()]
+                print(';'.join(prof_list))
+        elif method == 'vscode':
+            vars = [f'\"{env_var}\": \"{":".join(env_data)}\"' for env_var, env_data in profile.items()]
+            print(',\n'.join(vars))
+        if path is None:
+            return
+        
+        # Path-based profiles
+        with open(path, 'w') as f:
+            if method == 'dotenv':
+                for env_var, env_data in profile.items():
+                    f.write(f'export {env_var}=\"{":".join(env_data)}\"\n')
+            elif method == 'cmake':
+                for env_var, env_data in profile.items():
+                    f.write(f'set(ENV{{{env_var}}} \"{":".join(env_data)}\")\n')
 
     def _get_env(self, env_var):
         """
