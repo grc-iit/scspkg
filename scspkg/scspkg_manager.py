@@ -126,8 +126,10 @@ class ScspkgManager:
                             for env_var, env_data in profile.items()]
                 print(';'.join(prof_list))
         elif method == 'vscode':
-            vars = [f'\"{env_var}\": \"{":".join(env_data)}\"' for env_var, env_data in profile.items()]
+            vars = [f'  \"{env_var}\": \"{":".join(env_data)}\"' for env_var, env_data in profile.items()]
+            print('environment {')
             print(',\n'.join(vars))
+            print('}')
         if path is None:
             return
         
