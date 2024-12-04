@@ -6,3 +6,4 @@ coverage-lcov==0.2.4
 # coverage-lcov
 pytest==6.2.5
 tabulate
+jarvis-util @ git+https://github.com/scs-lab/jarvis-util.git#egg=jarvis-util

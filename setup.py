@@ -22,6 +22,6 @@ setuptools.setup(
     ],
     long_description="",
     install_requires=[
-        'jarvis-util @ git+https://github.com/scs-lab/jarvis-util.git#egg=jarvis-util'
+        # 'jarvis-util @ git+https://github.com/scs-lab/jarvis-util.git#egg=jarvis-util'
     ]
 )
