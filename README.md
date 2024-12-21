@@ -41,7 +41,7 @@ fi
 cd /path/to/scspkg
 python3 -m pip install -r requirements.txt
 python3 -m pip install -e .
-SCSPKG_MODULE_DIR=`scspkg module dir`
+SCSPKG_MODULE_DIR=$(scspkg module dir)
 echo "module use ${SCSPKG_MODULE_DIR}" >> ~/.bashrc
 ```
 
@@ -57,18 +57,9 @@ module use `scspkg module dir`
 
 After installing, you'll have to bootstrap scspkg.
 
-If using LMOD for environment variables:
 ```
 scspkg init
-```
-
-If using Environment Modules (tcl):
-```
-scspkg init False
-```
-
-If you don't know whether LMOD or Environment Modules is installed, assume 
-Environment Modules. LMOD is compatible with Environment Module scripts.
+``` 
 
 # 0.4. Using the modulefiles
 

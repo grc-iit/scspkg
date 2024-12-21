@@ -21,7 +21,7 @@ class ScspkgArgs(ArgParse):
                 'msg': 'Whether to use LMOD or not for modulefiles',
                 'type': bool,
                 'required': False,
-                'default': True,
+                'default': False,
                 'pos': True
             }
         ])
