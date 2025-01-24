@@ -137,7 +137,7 @@ class ScspkgManager:
         with open(path, 'w') as f:
             if method == 'dotenv':
                 for env_var, env_data in profile.items():
-                    f.write(f'export {env_var}=\"{":".join(env_data)}\"\n')
+                    f.write(f'{env_var}=\"{":".join(env_data)}\"\n')
             elif method == 'cmake':
                 for env_var, env_data in profile.items():
                     f.write(f'set(ENV{{{env_var}}} \"{":".join(env_data)}\")\n')
