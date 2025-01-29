@@ -35,8 +35,6 @@ class ScspkgManager:
         self.pkg_dir = f'{self.scspkg_root}/packages'
         self.module_dir = f'{self.scspkg_root}/modulefiles'
         self.config_dir = f'{self.scspkg_root}/config'
-        self.env = LocalExecInfo().basic_env
-        self.env_path = f'{self.config_dir}/env.yaml'
         self.module_type = ModuleType.TCL
         self.config = {}
         self.config_path = f'{self.config_dir}/scspkg_config.yaml'
@@ -63,7 +61,6 @@ class ScspkgManager:
 
         :return: self
         """
-        YamlFile(self.env_path).save(self.env)
         return self
 
     def reset(self):
@@ -90,8 +87,6 @@ class ScspkgManager:
 
         :return: self
         """
-        if os.path.exists(self.env_path):
-            self.env = YamlFile(self.env_path).load()
         if os.path.exists(self.config_path):
             self.config = YamlFile(self.config_path).load()
         if 'MODULE_TYPE' in self.config:
