@@ -31,9 +31,7 @@ class ScspkgManager:
         return ScspkgManager.instance_
 
     def __init__(self):
-        self.scspkg_root = str(
-            pathlib.Path(inspect.getfile(self.__class__)).
-                parent.parent.resolve())
+        self.scspkg_root = os.path.join(os.path.expanduser('~'), '.scspkg')
         self.pkg_dir = f'{self.scspkg_root}/packages'
         self.module_dir = f'{self.scspkg_root}/modulefiles'
         self.config_dir = f'{self.scspkg_root}/config'
