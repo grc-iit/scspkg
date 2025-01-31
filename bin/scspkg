@@ -256,6 +256,18 @@ class ScspkgArgs(ArgParse):
             }
         ])
 
+        # scspkg schema rebuild
+        self.add_cmd('schema rebuild',
+                     msg='Rebuild the YAML schema for the package')
+        self.add_args([
+            {
+                'name': 'PKG_NAME',
+                'msg': 'The name of the package to query',
+                'required': True,
+                'pos': True
+            }
+        ])
+
         # scspkg module
         self.add_menu('module',
                       msg='Query and modify the SCSPKG modulefile')
@@ -426,6 +438,9 @@ class ScspkgArgs(ArgParse):
 
     def schema_show(self):
         print(Package(self.kwargs['PKG_NAME']).get_module_schema())
+
+    def schema_rebuild(self):
+        Package(self.kwargs['PKG_NAME']).reset_config().save()
 
     def module_dir(self):
         print(self.scspkg.module_dir)
