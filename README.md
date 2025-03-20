@@ -1,6 +1,6 @@
 A simple tool for building modulefiles and testing build scripts before building 
 a spack script. It's also useful for when spack fails. 
-More detailed doucmentation for its usage is [here](https://github.com/scs-lab/scspkg/wiki).
+More detailed doucmentation for its usage is [here]([https://github.com/scs-lab/scspkg/wiki](https://grc.iit.edu/docs/jarvis/scspkg/index)).
 
 # 0.1. Dependencies
 
