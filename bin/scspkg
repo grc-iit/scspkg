@@ -5,6 +5,7 @@ from jarvis_util import *
 from scspkg.scspkg_manager import ScspkgManager, ModuleType
 from scspkg.pkg import Package
 from scspkg.pkg_manager import PackageManager
+import re
 
 
 class ScspkgArgs(ArgParse):
@@ -17,9 +18,11 @@ class ScspkgArgs(ArgParse):
                      msg='Initialize SCSPKG installation')
         self.add_args([
             {
-                'name': 'USE_LMOD',
-                'msg': 'Whether to use LMOD or not for modulefiles',
-                'type': bool,
+                'name': 'type',
+                'msg': 'What type of module system to use',
+                'type': str,
+                'default': 'tcl',
+                'choices': ['tcl', 'bash'],
                 'required': False,
                 'default': False,
                 'pos': True
@@ -288,6 +291,20 @@ class ScspkgArgs(ArgParse):
             }
         ])
 
+        # scspkg module avail
+        self.add_cmd('module avail',
+                     msg='Print available packages')
+        self.add_args([
+            {
+                'name': 'REGEX',
+                'msg': 'The regex to search for',
+                'type': str,
+                'default': None,
+                'required': False,
+                'pos': True
+            }
+        ])
+
         # scspkg module show
         self.add_cmd('module show',
                      msg='Print the modulefile for package')
@@ -316,6 +333,30 @@ class ScspkgArgs(ArgParse):
         # scspkg module reset
         self.add_cmd('module reset',
                      msg='Reset module for package')
+        self.add_args([
+            {
+                'name': 'PKG_NAME',
+                'msg': 'The name of the package to query',
+                'required': True,
+                'pos': True
+            }
+        ])
+
+        # scspkg module load 
+        self.add_cmd('module load',
+                        msg='Load the module for package')
+        self.add_args([
+            {
+                'name': 'PKG_NAME',
+                'msg': 'The name of the package to query',
+                'required': True,
+                'pos': True
+            }
+        ])
+
+        # scspkg module unload
+        self.add_cmd('module unload',
+                        msg='Unload the module for package')
         self.add_args([
             {
                 'name': 'PKG_NAME',
@@ -363,11 +404,12 @@ class ScspkgArgs(ArgParse):
     """
 
     def init(self):
-        if self.kwargs['USE_LMOD']:
-            self.scspkg.module_type = ModuleType.LMOD
-        else:
+        if self.kwargs['type'] == 'tcl':
             self.scspkg.module_type = ModuleType.TCL
+        elif self.kwargs['type'] == 'bash':
+            self.scspkg.module_type = ModuleType.BASH
         self.scspkg.init()
+        self.scspkg.change_module_type(self.scspkg.module_type)
 
     def reset(self):
         self.pkg_mngr.reset()
@@ -442,6 +484,13 @@ class ScspkgArgs(ArgParse):
     def schema_rebuild(self):
         Package(self.kwargs['PKG_NAME']).reset_config().save()
 
+    def module_avail(self):
+        print('Available packages:')
+        for pkg_name in self.scspkg.avail():
+            if self.kwargs['REGEX'] and not re.search(self.kwargs['REGEX'], pkg_name):
+                continue
+            print(f'  {pkg_name}')
+
     def module_dir(self):
         print(self.scspkg.module_dir)
 
@@ -457,11 +506,20 @@ class ScspkgArgs(ArgParse):
     def module_reset(self):
         Package(self.kwargs['PKG_NAME']).reset_config().save()
 
+    def module_load(self):
+        pkg = Package(self.kwargs['PKG_NAME'])
+        print(pkg.module_load())
+
+    def module_unload(self):
+        pkg = Package(self.kwargs['PKG_NAME'])
+        print(pkg.module_unload())
+
     def build_profile(self):
         if self.kwargs['PKG_NAME'] is None:
             self.scspkg.build_profile(self.kwargs['path'], self.kwargs['method'])
         else:
             Package(self.kwargs['PKG_NAME']).build_profile(rebuild=True).save()
+
 
 
 if __name__ == '__main__':

@@ -57,7 +57,7 @@ class PackageManager:
                 print(f'{x} is neither yes or no')
                 continue
 
-        for pkg_name in os.listdir(self.scspkg.module_dir):
+        for pkg_name in self.avail():
             Package(pkg_name).destroy()
         return self
 
@@ -65,8 +65,29 @@ class PackageManager:
         """
         This will rebuild the modulefiles for all packages
         """
-        for pkg_name in os.listdir(self.scspkg.module_dir):
+        for pkg_name in self.avail():
             Package(pkg_name).save()
+
+    def avail(self):
+        """
+        List all available packages in scspkg
+
+        :return: None
+        """
+        return os.listdir(self.module_dir)
+
+    def change_module_type(self, module_type):
+        """
+        Change the module type of scspkg
+
+        :param module_type: The new module type
+        :return: None
+        """
+        self.module_type = module_type
+        for pkg_name in self.avail():
+            Package(self, pkg_name).load().save()
+            print(f'Package {pkg_name} updated to {self.module_type.name} module type')
+        self.save()
 
     def reset_module(self, pkgs):
         """
@@ -75,7 +96,7 @@ class PackageManager:
         if isinstance(pkgs, str):
             pkgs = [pkgs]
         if pkgs[0] == '*':
-            for pkg_name in os.listdir(self.scspkg.module_dir):
+            for pkg_name in self.avail():
                 Package(pkg_name).reset_config().save()
         else:
             for pkg_name in pkgs:
@@ -100,7 +121,7 @@ class PackageManager:
 
         :return: self
         """
-        for pkg_name in os.listdir(self.scspkg.module_dir):
+        for pkg_name in self.avail():
             print(pkg_name)
         return self
 
@@ -112,7 +133,7 @@ class PackageManager:
         :return: self
         """
         print(f'pkgs matching {regex}: ')
-        for pkg_name in os.listdir(self.scspkg.module_dir):
+        for pkg_name in self.avail():
             if re.search(regex, pkg_name):
                 print(pkg_name)
         print()

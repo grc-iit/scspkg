@@ -11,9 +11,10 @@ from enum import Enum
 from jarvis_util import *
 # pylint: enable=W0401,W0614
 
+
 class ModuleType(Enum):
     TCL = 'tcl'
-    LMOD = 'lmod'
+    BASH = 'bash'
 
 
 class ScspkgManager:
@@ -146,3 +147,4 @@ class ScspkgManager:
         if os_var is None:
             return ''
         return os_var
+    

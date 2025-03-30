@@ -1,12 +1,13 @@
 """
 This module is responsbile for building modulefiles in a structured way.
 """
-from scspkg.scspkg_manager import ScspkgManager, ModuleType
 import os
 import json
 # pylint: disable=W0401,W0614
 from jarvis_util import *
 # pylint: enable=W0401,W0614
+from scspkg.scspkg_manager import ScspkgManager, ModuleType
+from abc import ABC, abstractmethod
 
 
 class Package:
@@ -22,6 +23,7 @@ class Package:
         self.module_path = os.path.join(self.scspkg.module_dir, self.name)
         self.module_schema_path = os.path.join(self.pkg_root,
                                                f'{self.name}.yaml')
+        self.mod_load_name = f'SCSPKG_{self.name}_LOADED'
         self.sections = {}
         self.reset_config()
         self.load()
@@ -87,11 +89,10 @@ class Package:
         Save the YAML + modulefiles to the directories.
         """
         YamlFile(self.module_schema_path).save(self.sections)
-        self._save_as_tcl()
-        # if self.scspkg.module_type == ModuleType.TCL:
-        #     self._save_as_tcl()
-        # else:
-        #     self._save_as_lmod()
+        if self.scspkg.module_type == ModuleType.TCL:
+            self._save_as_tcl()
+        elif self.scspkg.module_type == ModuleType.BASH:
+            self._save_as_bash()
         return self
 
     def _save_as_tcl(self):
@@ -121,30 +122,23 @@ class Package:
             module = '\n'.join(module)
             fp.write(module)
 
-    def _save_as_lmod(self):
+    def _save_as_bash(self):
         """
-        Save the LMOD representation of the YAML schema
+        Save the bash representation of the YAML schema
 
         :return: None
         """
         module = []
         # The module header
-        module.append('-- Module1.0')
+        module.append('#!/bin/bash')
         # The module doc
-        module.append(f'help([[')
         for doc_key, doc_val in self.sections['doc'].items():
-            module.append(f'  {doc_key}: {doc_val}')
-        module.append(']])')
+            module.append(f'# \"{doc_key}: {doc_val}\"')
         # The module dependencies
         for dep in self.sections['deps'].keys():
-            module.append(f'depends_on(\"{dep}\")')
+            module.append(f'$(scspkg module load {dep})')
         # The module environment variables
-        for env, env_data in self.sections['setenvs'].items():
-            module.append(f'setenv(\"{env}\", \"{env_data}\")')
-        # The module environment prepends
-        for env, values in self.sections['prepends'].items():
-            for value in values:
-                module.append(f'prepend_path(\"{env}\", \"{value}\")')
+        module.append('$(scspkg module load )')
         # Write the lines
         with open(self.module_path, 'w', encoding='utf-8') as fp:
             module = '\n'.join(module)
@@ -198,10 +192,10 @@ class Package:
         """
         if isinstance(env_data, str):
             env_data = [env_data]
-        if env_name not in self.sections['prepends']:
-            self.sections['prepends'][env_name] = []
-        env_data += self.sections['prepends'][env_name]
-        self.sections['prepends'][env_name] = env_data
+        if env_name not in self.sections['appends']:
+            self.sections['appends'][env_name] = []
+        env_data += self.sections['appends'][env_name]
+        self.sections['appends'][env_name] = env_data
         return self
 
     def rm_env(self, env_name):
@@ -305,3 +299,178 @@ class Package:
         else:
             print(f'Error: Package {self.name} does not exist')
             sys.exit(1)
+
+    def get_script_loader(self):
+        if self.scspkg.module_type == ModuleType.TCL:
+            print('Use "module load instead" of "scspkg module load"')
+            return
+        elif self.scspkg.module_type == ModuleType.BASH:
+            return BashLoader(self)
+        else:
+            print(f'Error: Unknown module type {self.scspkg.module_type}')
+
+    def module_load(self):
+        """
+        Create the script to load this module
+
+        :return: None
+        """
+        scripter = self.get_script_loader()
+        if not scripter:
+            return
+        return scripter.module_load()
+        
+    def module_unload(self):
+        """
+        Create the script to unload this module
+
+        :return: None
+        """
+        scripter = self.get_script_loader()
+        if not scripter:
+            return
+        return scripter.module_unload()
+
+
+class ScriptLoader(ABC):
+    """
+    Abstract class to load scripts
+    """
+
+    def __init__(self, pkg):
+        self.pkg = pkg
+        self.scspkg = ScspkgManager.get_instance()
+        self.name = self.pkg.name
+        self.mod_load_name = self.pkg.mod_load_name
+        self.sections = self.pkg.sections
+
+    def is_loaded(self):
+        """
+        Check if this module is loaded in the current bash session
+
+        :return: True or False
+        """
+        if os.environ.get(self.mod_load_name):
+            return True
+        return False
+    
+    def module_load(self):
+        """
+        Create the script to load this module in bash
+
+        :return: None
+        """
+        # Verify that the module is not loaded
+        if self.is_loaded():
+            print(f'Module {self.name} is already loaded')
+            exit(1)
+        envs = []
+
+        # Process setenvs
+        for env, env_data in self.sections['setenvs'].items():
+            envs.append(self.set_env(env, env_data))
+
+        # Process prepends
+        for env, values in self.sections['prepends'].items():
+            if values:
+                envs.append(self.prepend_env(env, values))
+        
+        # Mark this module as loaded
+        envs.append(self.set_env(self.mod_load_name, '1'))
+        return '\n'.join(envs)
+
+    def module_unload(self):
+        """
+        Create the script to unload this module in bash
+
+        :return: None
+        """
+        # Verify that the module is loaded
+        if not self.is_loaded():
+            print(f'Module {self.name} is not loaded')
+            exit(1)
+        envs = []
+
+        # Process setenvs
+        for env in self.sections['setenvs'].keys():
+            envs.append(self.unset_env(env))
+
+        # Process prepends
+        for env, values in self.sections['prepends'].items():
+            if values:
+                path_str = ':'.join(values)
+                if env in os.environ:
+                    os.environ[env] = os.environ[env].replace(path_str, '').strip(':')
+                    envs.append(self.set_env(env, os.environ[env]))
+
+        # Mark this module as unloaded
+        self.unset_env(self.mod_load_name)
+        return '\n'.join(envs)
+
+    @abstractmethod
+    def set_env(self, env_name, env_data):
+        """
+        Set the value of an environment variable.
+
+        :param env_name: the environment variable to set
+        :param env_data: the value of the variable
+        :return: self
+        """
+        pass
+
+    @abstractmethod
+    def prepend_env(self, env_name, env_data):
+        """
+        Prepend data to an environment variable
+
+        :param env_name: The environment variable to prepend to
+        :param env_data: A list or string of the data to prepend
+        :return: self
+        """
+        pass
+
+    @abstractmethod
+    def unset_env(self, env_name):
+        """
+        Remove an environment
+
+        :param env_name: The environment variable to remove
+        :return: self
+        """
+        pass
+    
+
+class BashLoader(ScriptLoader):
+    """
+    Class to load bash scripts
+    """
+    def set_env(self, env_name, env_data):
+        """
+        Set the value of an environment variable in bash
+        :param env_name: the environment variable to set
+        :param env_data: the value of the variable
+        :return: None
+        """
+        return f'export {env_name}={env_data}'
+    
+    def prepend_env(self, env_name, values):
+        """
+        Prepend data to an environment variable in bash
+        :param env_name: The environment variable to prepend to
+        :param values: A list of the data to prepend
+        :return: None
+        """
+        path_str = ':'.join(values)
+        env_val = os.environ[env_name]
+        if env_name in os.environ:
+            return f'export {env_name}={path_str}:{env_val}'
+        else:
+            return f'export {env_name}={path_str}'
+    
+    def unset_env(self, env_name):
+        """
+        Unset the value of an environment variable in bash
+        :param env_name: the environment variable to unset
+        :return: None
+        """
+        return f'unset {env_name}'
