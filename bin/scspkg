@@ -410,6 +410,7 @@ class ScspkgArgs(ArgParse):
             self.scspkg.module_type = ModuleType.BASH
         self.scspkg.init()
         self.pkg_mngr.change_module_type(self.scspkg.module_type)
+        self.scspkg.save()
 
     def reset(self):
         self.pkg_mngr.reset()

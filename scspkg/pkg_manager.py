@@ -85,9 +85,10 @@ class PackageManager:
         """
         self.module_type = module_type
         for pkg_name in self.avail():
-            Package(self, pkg_name).load().save()
+            Package(pkg_name).load().save()
             print(f'Package {pkg_name} updated to {self.module_type.name} module type')
-        self.save()
+        self.scspkg.save()
+        return self
 
     def reset_module(self, pkgs):
         """
