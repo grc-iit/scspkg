@@ -1,4 +1,7 @@
 import setuptools
+import os
+import shutil
+from pathlib import Path
 
 setuptools.setup(
     name="scspkg",
@@ -25,3 +28,7 @@ setuptools.setup(
         # 'jarvis-util @ git+https://github.com/scs-lab/jarvis-util.git#egg=jarvis-util'
     ]
 )
+
+home = str(Path.home())
+os.makedirs(f"{home}/.scspkg/bin", exist_ok=True)
+shutil.copytree('bin', f"{home}/.scspkg/bin", dirs_exist_ok=True)

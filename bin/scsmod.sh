@@ -10,7 +10,7 @@ scsmod() {
             cmd_output=$(scspkg module load $@)
             local exit_status=$?
             if [ $exit_status -ne 0 ]; then
-                echo $cmd_output
+                scspkg module load $@
                 return $exit_status
             fi
             eval "$cmd_output"
@@ -20,7 +20,7 @@ scsmod() {
             cmd_output=$(scspkg module unload $@)
             local exit_status=$?
             if [ $exit_status -ne 0 ]; then
-                echo $cmd_output
+                scspkg module unload
                 return $exit_status
             fi
             eval "$cmd_output"

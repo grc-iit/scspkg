@@ -409,7 +409,7 @@ class ScspkgArgs(ArgParse):
         elif self.kwargs['type'] == 'bash':
             self.scspkg.module_type = ModuleType.BASH
         self.scspkg.init()
-        self.scspkg.change_module_type(self.scspkg.module_type)
+        self.pkg_mngr.change_module_type(self.scspkg.module_type)
 
     def reset(self):
         self.pkg_mngr.reset()
@@ -486,7 +486,7 @@ class ScspkgArgs(ArgParse):
 
     def module_avail(self):
         print('Available packages:')
-        for pkg_name in self.scspkg.avail():
+        for pkg_name in self.pkg_mngr.avail():
             if self.kwargs['REGEX'] and not re.search(self.kwargs['REGEX'], pkg_name):
                 continue
             print(f'  {pkg_name}')

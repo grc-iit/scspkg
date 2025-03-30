@@ -74,7 +74,7 @@ class PackageManager:
 
         :return: None
         """
-        return os.listdir(self.module_dir)
+        return os.listdir(self.scspkg.module_dir)
 
     def change_module_type(self, module_type):
         """
